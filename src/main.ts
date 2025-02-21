@@ -22,3 +22,28 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 `
 
 setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+
+async function initWebGPU() {
+  const statusElement = document.getElementById("gpu-status");
+
+  if (!navigator.gpu) {
+      console.error("WebGPU not supported on this browser.");
+      if (statusElement) statusElement.innerText = "WebGPU not supported!";
+      return;
+  }
+
+  const adapter = await navigator.gpu.requestAdapter();
+  const device = await adapter?.requestDevice();
+
+  if (!device) {
+      console.error("Failed to get WebGPU device.");
+      if (statusElement) statusElement.innerText = "Failed to initialize WebGPU!";
+      return;
+  }
+
+  console.log("WebGPU initialized successfully!");
+  if (statusElement) statusElement.innerText = "WebGPU is working!";
+}
+
+// Call WebGPU initialization
+initWebGPU();
