@@ -1,42 +1,15 @@
 import './style.css'
+import { initWebGPU } from "./gpu/device";
 
-async function initWebGPU() {
+async function main() {
   const canvas = document.createElement("canvas");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
   document.body.appendChild(canvas);
 
-  const statusElement = document.getElementById("gpu-status");
-
-  if (!navigator.gpu) {
-    console.error("WebGPU not supported on this browser.");
-    if (statusElement) statusElement.innerText = "WebGPU not supported!";
-    return;
-  }
-
-  const adapter = await navigator.gpu.requestAdapter();
-  if (!adapter) {
-    throw new Error("No appropriate GPUAdapter found.");
-  }
-  
-  const device = await adapter?.requestDevice();
-
-  if (!device) {
-    console.error("Failed to get WebGPU device.");
-    if (statusElement) statusElement.innerText = "Failed to initialize WebGPU!";
-    return;
-  }
-
-  console.log("WebGPU initialized successfully!");
-  if (statusElement) statusElement.innerText = "WebGPU is working!";
-
-  const context = canvas.getContext("webgpu");
-  const canvasFormat = navigator.gpu.getPreferredCanvasFormat(); // The best color format for this browser.
-  context.configure({
-    device: device, 
-    format: canvasFormat,
-  });
+  // Initialize WebGPU
+  const { device: device, context: context, format: canvasFormat } = await initWebGPU(canvas);
 
   const shaderCode = `
     @vertex
@@ -92,4 +65,4 @@ async function initWebGPU() {
 }
 
 // Call WebGPU initialization
-initWebGPU();
+main();
