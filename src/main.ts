@@ -1,5 +1,6 @@
 import './style.css'
 import { initWebGPU } from "./gpu/device";
+import { createRenderPipeline } from './gpu/pipeline';
 
 async function main() {
   const canvas = document.createElement("canvas");
@@ -11,34 +12,8 @@ async function main() {
   // Initialize WebGPU
   const { device: device, context: context, format: canvasFormat } = await initWebGPU(canvas);
 
-  const shaderCode = `
-    @vertex
-    // defines full screen quad positions
-    fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> @builtin(position) vec4<f32> {
-      let pos = array(
-        vec2<f32>(-1.0, -1.0),
-        vec2<f32>( 1.0, -1.0),
-        vec2<f32>(-1.0,  1.0),
-        vec2<f32>( 1.0,  1.0),
-      );
-      return vec4<f32>(pos[vertexIndex], 0.0, 1.0);
-    }
-
-    @fragment
-    fn fs_main() -> @location(0) vec4<f32> {
-      return vec4<f32>(0.0, 0.0, 1.0, 1.0); // blue screen
-    }
-  `;
-
-  // compiles WGSL shader code into WebGPU shader module
-  const shaderModule = device.createShaderModule({ code: shaderCode });
-
-  const pipeline = device.createRenderPipeline({
-    vertex: { module: shaderModule, entryPoint: "vs_main" },                                        // positions the quad
-    fragment: {module: shaderModule, entryPoint: "fs_main", targets: [{ format: canvasFormat }]},   // colors the screen
-    primitive: { topology: "triangle-strip" },                                                      // rectangle made of two triangles
-    layout: "auto",
-  });
+  // Create render pipeline
+  const pipeline = createRenderPipeline(device, canvasFormat);
 
   // create render pass to draw the quad
   function render() {
