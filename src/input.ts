@@ -1,11 +1,32 @@
 export class MouseHandler {
   pos: [number, number] = [0, 0]; // stores normalized mouse position
   vel: [number, number] = [0, 0]; // stores mouse velocity
+  isMouseDown = false;
 
   constructor(canvas: HTMLCanvasElement, device: GPUDevice, mouseBuffer: GPUBuffer) {
     let lastPos: [number, number] = [0, 0]; // local var storing previous pos to be able to calculate vel later
 
+    canvas.addEventListener("mousedown", (event) => {
+      this.isMouseDown = true;
+
+      // update lastPost to current position
+      const rect = canvas.getBoundingClientRect();
+      lastPos = [
+        (event.clientX - rect.left) / rect.width,
+        (event.clientY - rect.top) / rect.height
+      ];
+    });
+
+    canvas.addEventListener("mouseup", () => {
+      this.isMouseDown = false;
+
+      this.vel = [0, 0];
+      this.updateGPUBuffer(device, mouseBuffer);
+    });
+
     canvas.addEventListener("mousemove", (event) => {
+      if (!this.isMouseDown) return;
+
       const rect = canvas.getBoundingClientRect();
       const newPos: [number, number] = [
         // normalization
