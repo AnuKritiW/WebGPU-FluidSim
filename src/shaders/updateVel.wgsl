@@ -56,6 +56,15 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let mousePos = uMouse.xy * uGridSize;
     let mouseVel = uMouse.zw * uStrength;  
 
+    // DEBUG
+    // if (distance(pos, mousePos) < 5.0) {
+    //     // Force the cell to have a high velocity
+    //     // We forcibly assign (1,0) to give a speed of 1 -> red in render
+    //     // TODO: Adjust the parameters after Advection and other shaders have been added -- like uStrength and uRad
+    //     vel[index] = vec2<f32>(1.0, 0.0);
+    //     return;
+    // }
+
     let influence = gaussianWeight(pos, mousePos, uRad, mouseVel);
 
     // Apply force, with a velocity scaling factor for more fluidity

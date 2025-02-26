@@ -32,8 +32,9 @@ async function main() {
 
   // Write Initial Values
   const gridSizeData = new Float32Array([gridSize, gridSize]); // vec2<f32>
-  const radiusData   = new Float32Array([10.0, 0.0, 0.0, 0.0]); // f32 aligned
-  const strengthData = new Float32Array([1.0, 0.0, 0.0, 0.0]); // f32 aligned
+  // TODO: adjust these parameters to see velocity injection more/less easily
+  const radiusData   = new Float32Array([5.0, 0.0, 0.0, 0.0]); // f32 aligned
+  const strengthData = new Float32Array([100.0, 0.0, 0.0, 0.0]); // f32 aligned
 
   device.queue.writeBuffer(gridSizeBuffer, 0, gridSizeData);
   device.queue.writeBuffer(radiusBuffer, 0, radiusData);
@@ -61,10 +62,28 @@ async function main() {
     device.queue.submit([commandEncoder.finish()]);
   }
 
+  const canvasSizeBuffer = device.createBuffer({
+    size: 2 * Float32Array.BYTES_PER_ELEMENT,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+  });
+  const canvasSizeData = new Float32Array([canvas.width, canvas.height]);
+  device.queue.writeBuffer(canvasSizeBuffer, 0, canvasSizeData);
+
+  const renderBindGroup = device.createBindGroup({
+    layout: renderPipeline.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: { buffer: velBuffer } },
+      { binding: 1, resource: { buffer: gridSizeBuffer } },
+      { binding: 2, resource: { buffer: canvasSizeBuffer } }
+    ]
+  });
+
   function renderLoop() {
     runComputePass();
     // create render pass to draw the quad
-    render(device, context, renderPipeline);
+    render(device, context, renderPipeline, renderBindGroup);
+    // DEBUG
+    // readVelocityBuffer(device, velBuffer);
     requestAnimationFrame(renderLoop);
   }
 
@@ -94,6 +113,41 @@ async function main() {
 
 //   update();
 // }
+
+// DEBUG
+// async function readVelocityBuffer(device: GPUDevice, velocityBuffer: GPUBuffer) {
+//   // Create a readback buffer
+//   const readBuffer = device.createBuffer({
+//       size: velocityBuffer.size,
+//       usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST
+//   });
+
+//   // Copy GPU buffer to the read buffer
+//   const commandEncoder = device.createCommandEncoder();
+//   commandEncoder.copyBufferToBuffer(velocityBuffer, 0, readBuffer, 0, velocityBuffer.size);
+//   device.queue.submit([commandEncoder.finish()]);
+
+//   // Wait for the GPU to complete execution
+//   await readBuffer.mapAsync(GPUMapMode.READ);
+
+//   // Read buffer content
+//   const arrayBuffer = readBuffer.getMappedRange();
+//   const velocityData = new Float32Array(arrayBuffer);
+
+//   // Compute speed (length of velocity vector for each grid cell)
+//   const speeds = [];
+//   for (let i = 0; i < velocityData.length; i += 2) {
+//       const vx = velocityData[i];   // x-component of velocity
+//       const vy = velocityData[i + 1]; // y-component of velocity
+//       const speed = Math.sqrt(vx * vx + vy * vy); // Compute magnitude
+//       speeds.push(speed);
+//   }
+
+//   console.log("Speed values:", speeds);
+
+//   readBuffer.unmap();
+// }
+
 
 // Call WebGPU initialization
 main();
