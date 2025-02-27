@@ -3,8 +3,9 @@ import { initWebGPU } from "./gpu/device";
 import { createPipelines } from './gpu/pipeline';
 import { render } from './renderer';
 import { MouseHandler } from "./input";
-import { createMouseBuffer, createVelBuffer, createGridSizeBuffer, createRadBuffer, createStrengthBuffer } from './gpu/buffers';
+import { createMouseBuffer, createVelBuffer, createGridSizeBuffer, createRadBuffer, createStrengthBuffer, createDyeFieldBuffer, createDyeFieldOutBuffer, createDeltaTimeBuffer} from './gpu/buffers';
 
+// TODO: cleanup!! abstract out stuff
 async function main() {
   const canvas = document.createElement("canvas");
   canvas.width = window.innerWidth;
@@ -16,13 +17,61 @@ async function main() {
   const { device: device, context: context, format: canvasFormat } = await initWebGPU(canvas);
 
   const mouseBuffer = createMouseBuffer(device);
-  new MouseHandler(canvas, device, mouseBuffer);
+  const mouseHandler = new MouseHandler(canvas, device, mouseBuffer);
+
+  // Inject dye at the mouse position
+  function injectDye(
+    device: GPUDevice,
+    dyeFieldBuffer: GPUBuffer,
+    gridSize: number,
+    mousePos: [number, number]
+  ) {
+    // Initialize with existing values
+    // Compute the cell idx from the normalized mouse pos
+    const cellX = Math.floor(mousePos[0] * gridSize);
+    const cellY = Math.floor(mousePos[1] * gridSize);
+    const index = cellX + cellY * gridSize;
+
+    // index is cell's position in the 1D array
+    // offset is the index converted to a byte offset (since GPU buffers are addressed in bytes)
+    // so by calculating it here, only the specific cell's value will be updated
+    // (as opposed to overwriting the whole buffer each time)
+    const offset = index * Float32Array.BYTES_PER_ELEMENT;
+
+    // Forcibly set dyeVal to 1.0 at the cell corresponding to the mouse pos
+    // TODO: revisit
+    const dyeVal = new Float32Array([1.0]);
+
+    // Write dyeVal to buffer
+    device.queue.writeBuffer(dyeFieldBuffer, offset, dyeVal);
+  }
+
+  // ping-pong update
+  // one buffer holds the current state (input) and the other buffer holds current computation (output)
+  // after running the compute pass, swap the output back to become the new input for the next frame
+  // This prevents data from being overwritten during processing --> new sim starts with the latest state
+  // This ultimately should enable continuous evolution of dye overtime
+  function updateDyeField(
+    device: GPUDevice,
+    dyeFieldBuffer: GPUBuffer,
+    dyeFieldOutBuffer: GPUBuffer
+  ) {
+    const commandEncoder = device.createCommandEncoder();
+    commandEncoder.copyBufferToBuffer(
+      dyeFieldOutBuffer,
+      0,
+      dyeFieldBuffer,
+      0,
+      dyeFieldBuffer.size
+    );
+    device.queue.submit([commandEncoder.finish()]);
+  }
 
   // DEBUG
   // readMouseBuffer(device, mouseBuffer);
 
   // Create render pipeline
-  const { renderPipeline, velPipeline } = createPipelines(device, canvasFormat);
+  const { renderPipeline, velPipeline, advectionPipeline } = createPipelines(device, canvasFormat);
 
   const gridSize = 64;
   const velBuffer      = createVelBuffer(device, gridSize);
@@ -62,6 +111,31 @@ async function main() {
     device.queue.submit([commandEncoder.finish()]);
   }
 
+  const dyeFieldBuffer = createDyeFieldBuffer(device, gridSize);
+  const dyeFieldOutBuffer = createDyeFieldOutBuffer(device, gridSize);
+  const deltaTimeBuffer = createDeltaTimeBuffer(device);
+
+  const advectionBindGroup = device.createBindGroup({
+    layout: advectionPipeline.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: { buffer: velBuffer } },
+      { binding: 1, resource: { buffer: dyeFieldBuffer } },
+      { binding: 2, resource: { buffer: dyeFieldOutBuffer } },
+      { binding: 3, resource: { buffer: gridSizeBuffer } },
+      { binding: 4, resource: { buffer: deltaTimeBuffer } }
+    ]
+  });
+
+  function runAdvectionComputePass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(advectionPipeline);
+    passEncoder.setBindGroup(0, advectionBindGroup);
+    passEncoder.dispatchWorkgroups(gridSize / 8, gridSize / 8);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  };
+
   const canvasSizeBuffer = device.createBuffer({
     size: 2 * Float32Array.BYTES_PER_ELEMENT,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
@@ -74,12 +148,21 @@ async function main() {
     entries: [
       { binding: 0, resource: { buffer: velBuffer } },
       { binding: 1, resource: { buffer: gridSizeBuffer } },
-      { binding: 2, resource: { buffer: canvasSizeBuffer } }
+      { binding: 2, resource: { buffer: canvasSizeBuffer } },
+      { binding: 3, resource: { buffer: dyeFieldBuffer } }
     ]
   });
 
   function renderLoop() {
+
+    if (mouseHandler.isMouseDown) {
+      // mouseHandler.pos holds normalized mouse position
+      injectDye(device, dyeFieldBuffer, gridSize, mouseHandler.pos);
+    }
+
     runComputePass();
+    runAdvectionComputePass();
+    updateDyeField(device, dyeFieldBuffer, dyeFieldOutBuffer);
     // create render pass to draw the quad
     render(device, context, renderPipeline, renderBindGroup);
     // DEBUG
