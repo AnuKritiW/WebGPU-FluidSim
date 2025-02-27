@@ -1,6 +1,7 @@
 import { createShaderModule } from "./shaders";
 import updateVelocityShaderCode from "../shaders/updateVel.wgsl?raw";
 import advectionShaderCode from "../shaders/advection.wgsl?raw";
+import decayShaderCode from "../shaders/decay.wgsl?raw";
 
 function createRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
   const shaderModule = createShaderModule(device);
@@ -32,10 +33,20 @@ function createAdvectionComputePipeline(device: GPUDevice, format: GPUTextureFor
   })
 }
 
+function createDecayComputePipeline(device: GPUDevice, format: GPUTextureFormat) {
+  const decayShaderModule = device.createShaderModule({ code: decayShaderCode });
+
+  return device.createComputePipeline({
+    compute: { module: decayShaderModule, entryPoint: "main" },
+    layout: "auto"
+  })
+}
+
 export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const renderPipeline = createRenderPipeline(device, format);
   const velPipeline = createComputePipeline(device, format);
   const advectionPipeline = createAdvectionComputePipeline(device, format);
+  const decayPipeline = createDecayComputePipeline(device, format);
 
-  return { renderPipeline, velPipeline, advectionPipeline };
+  return { renderPipeline, velPipeline, advectionPipeline, decayPipeline };
 }
