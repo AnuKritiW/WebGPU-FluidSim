@@ -63,3 +63,10 @@ export function createDecayBuffer(device: GPUDevice) {
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
   });
 }
+
+export function createInjectionAmtBuffer(device: GPUDevice) {
+  return device.createBuffer({
+    size: 4 * Float32Array.BYTES_PER_ELEMENT, // f32 padded to vec4<32>
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+  });
+}
