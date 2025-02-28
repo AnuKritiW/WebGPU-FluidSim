@@ -169,10 +169,9 @@ async function main() {
   const renderBindGroup = device.createBindGroup({
     layout: renderPipeline.getBindGroupLayout(0),
     entries: [
-      { binding: 0, resource: { buffer: velBuffer } },
-      { binding: 1, resource: { buffer: gridSizeBuffer } },
-      { binding: 2, resource: { buffer: canvasSizeBuffer } },
-      { binding: 3, resource: { buffer: dyeFieldBuffer } }
+      { binding: 0, resource: { buffer: gridSizeBuffer } },
+      { binding: 1, resource: { buffer: canvasSizeBuffer } },
+      { binding: 2, resource: { buffer: dyeFieldBuffer } }
     ]
   });
 
