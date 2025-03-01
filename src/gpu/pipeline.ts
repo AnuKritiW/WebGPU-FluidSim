@@ -15,7 +15,7 @@ function createRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
   });
 }
 
-function createComputePipeline(device: GPUDevice, format: GPUTextureFormat) {
+function createComputePipeline(device: GPUDevice) {
   // Create Compute Pipeline for `updateVelocity.wgsl`
   const velShaderModule = device.createShaderModule({ code: updateVelocityShaderCode });
 
@@ -25,39 +25,39 @@ function createComputePipeline(device: GPUDevice, format: GPUTextureFormat) {
   });
 }
 
-function createAdvectionComputePipeline(device: GPUDevice, format: GPUTextureFormat) {
+function createAdvectionComputePipeline(device: GPUDevice) {
   const advectionShaderModule = device.createShaderModule({ code: advectionShaderCode });
 
   return device.createComputePipeline({
     compute: { module: advectionShaderModule, entryPoint: "main" },
     layout: "auto"
-  })
+  });
 }
 
-function createDecayComputePipeline(device: GPUDevice, format: GPUTextureFormat) {
+function createDecayComputePipeline(device: GPUDevice) {
   const decayShaderModule = device.createShaderModule({ code: decayShaderCode });
 
   return device.createComputePipeline({
     compute: { module: decayShaderModule, entryPoint: "main" },
     layout: "auto"
-  })
+  });
 }
 
-function createInjectionComputePipeline(device: GPUDevice, format: GPUTextureFormat) {
+function createInjectionComputePipeline(device: GPUDevice) {
   const injectionShaderModule = device.createShaderModule({ code: injectionShaderCode });
 
   return device.createComputePipeline({
     compute: { module: injectionShaderModule, entryPoint: "main" },
     layout: "auto"
-  })
+  });
 }
 
 export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const renderPipeline = createRenderPipeline(device, format);
-  const velPipeline = createComputePipeline(device, format);
-  const advectionPipeline = createAdvectionComputePipeline(device, format);
-  const decayPipeline = createDecayComputePipeline(device, format);
-  const injectionPipeline = createInjectionComputePipeline(device, format);
+  const velPipeline = createComputePipeline(device);
+  const advectionPipeline = createAdvectionComputePipeline(device);
+  const decayPipeline = createDecayComputePipeline(device);
+  const injectionPipeline = createInjectionComputePipeline(device);
 
   return { renderPipeline, velPipeline, advectionPipeline, decayPipeline, injectionPipeline };
 }
