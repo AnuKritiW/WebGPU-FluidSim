@@ -47,11 +47,23 @@ function createDecayBindGroup(device: GPUDevice, decayPipeline: GPURenderPipelin
   });
 }
 
+function createDivBindGroup(device: GPUDevice, divPipeline: GPURenderPipeline, buffers) {
+  return device.createBindGroup({
+    layout: divPipeline.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: { buffer: buffers.velBuf } },
+      { binding: 1, resource: { buffer: buffers.divBuf } },
+      { binding: 2, resource: { buffer: buffers.gridSizeBuf } }
+    ]
+  });
+}
+
 export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any) {
   const velBindGroup = createVelBindGroup(device, pipelines.velPipeline, buffers);
   const advectionBindGroup = createAdvectionBindGroup(device, pipelines.advectionPipeline, buffers);
   const injectionBindGroup = createInjectionBindGroup(device, pipelines.injectionPipeline, buffers);
   const decayBindGroup = createDecayBindGroup(device, pipelines.decayPipeline, buffers);
+  const divBindGroup = createDivBindGroup(device, pipelines.divPipeline, buffers);
 
-  return { velBindGroup, advectionBindGroup, injectionBindGroup, decayBindGroup};
+  return { velBindGroup, advectionBindGroup, injectionBindGroup, decayBindGroup, divBindGroup };
 }

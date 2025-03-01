@@ -12,6 +12,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     runAdvectionComputePass();
     updateDyeField();
     runDecayComputePass();
+    runDivergenceComputePass()
 
     render(device, context, pipelines.renderPipeline, getRenderBindGroup());
 
@@ -55,6 +56,16 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     const passEncoder = commandEncoder.beginComputePass();
     passEncoder.setPipeline(pipelines.decayPipeline);
     passEncoder.setBindGroup(0, bindGroups.decayBindGroup);
+    passEncoder.dispatchWorkgroups(gridSize / 8, gridSize / 8);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  }
+
+  function runDivergenceComputePass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(pipelines.divPipeline);
+    passEncoder.setBindGroup(0, bindGroups.divBindGroup);
     passEncoder.dispatchWorkgroups(gridSize / 8, gridSize / 8);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);

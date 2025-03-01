@@ -8,7 +8,7 @@ function createMouseBuf(device: GPUDevice) {
   });
 }
 
-function createVelBuf(device: GPUDevice, gridSize = number) {
+function createVelBuf(device: GPUDevice, gridSize: number) {
   return device.createBuffer({
     size: gridSize * gridSize * 2 * Float32Array.BYTES_PER_ELEMENT, // vec2<f32> per grid cell
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
@@ -36,14 +36,14 @@ function createStrengthBuf(device: GPUDevice) {
   });
 }
 
-function createDyeFieldBuf(device: GPUDevice, gridSize = number) {
+function createDyeFieldBuf(device: GPUDevice, gridSize: number) {
   return device.createBuffer({
     size: gridSize * gridSize * Float32Array.BYTES_PER_ELEMENT,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
   });
 }
 
-function createDyeFieldOutBuf(device: GPUDevice, gridSize = number) {
+function createDyeFieldOutBuf(device: GPUDevice, gridSize: number) {
   return device.createBuffer({
     size: gridSize * gridSize * Float32Array.BYTES_PER_ELEMENT,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
@@ -78,7 +78,14 @@ function createCanvasSizeBuf(device: GPUDevice) {
   });
 }
 
-export function createBuffers(device: GPUDevice, gridSize = number, canvas) {
+function createDivBuf(device: GPUDevice, gridSize: number) {
+  return device.createBuffer({
+    size: gridSize * gridSize * Float32Array.BYTES_PER_ELEMENT,
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+  });
+}
+
+export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const mouseBuf = createMouseBuf(device);
   const velBuf      = createVelBuf(device, gridSize);
   const gridSizeBuf = createGridSizeBuf(device);
@@ -90,6 +97,7 @@ export function createBuffers(device: GPUDevice, gridSize = number, canvas) {
   const injectionAmtBuf = createInjectionAmtBuf(device);
   const decayBuf = createDecayBuf(device);
   const canvasSizeBuf = createCanvasSizeBuf(device);
+  const divBuf = createDivBuf(device, gridSize);
 
   // Write initial values
   const injectionAmtData = new Float32Array([0.2, 0.0, 0.0 , 0.0]);
@@ -121,6 +129,7 @@ export function createBuffers(device: GPUDevice, gridSize = number, canvas) {
     deltaTimeBuf,
     injectionAmtBuf,
     decayBuf,
-    canvasSizeBuf
+    canvasSizeBuf,
+    divBuf
   };
 }

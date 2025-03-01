@@ -3,6 +3,7 @@ import updateVelocityShaderCode from "../shaders/updateVel.wgsl?raw";
 import advectionShaderCode from "../shaders/advection.wgsl?raw";
 import decayShaderCode from "../shaders/decay.wgsl?raw";
 import injectionShaderCode from "../shaders/injection.wgsl?raw";
+import divShaderCode from "../shaders/divergence.wgsl?raw"
 
 function createRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
   const shaderModule = createShaderModule(device);
@@ -52,12 +53,22 @@ function createInjectionComputePipeline(device: GPUDevice) {
   });
 }
 
+function createDivComputePipeline(device: GPUDevice) {
+  const divShaderModule = device.createShaderModule({ code: divShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: divShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
 export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const renderPipeline = createRenderPipeline(device, format);
   const velPipeline = createComputePipeline(device);
   const advectionPipeline = createAdvectionComputePipeline(device);
   const decayPipeline = createDecayComputePipeline(device);
   const injectionPipeline = createInjectionComputePipeline(device);
+  const divPipeline = createDivComputePipeline(device);
 
-  return { renderPipeline, velPipeline, advectionPipeline, decayPipeline, injectionPipeline };
+  return { renderPipeline, velPipeline, advectionPipeline, decayPipeline, injectionPipeline, divPipeline };
 }
