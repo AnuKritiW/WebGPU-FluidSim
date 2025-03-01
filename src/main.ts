@@ -3,8 +3,10 @@ import { initWebGPU } from "./gpu/device";
 import { createPipelines } from './gpu/pipeline';
 import { render } from './renderer';
 import { MouseHandler } from "./input";
-import { createMouseBuffer, createVelBuffer, createGridSizeBuffer, createRadBuffer, createStrengthBuffer } from './gpu/buffers';
+import { createMouseBuffer, createVelBuffer, createGridSizeBuffer, createRadBuffer, createStrengthBuffer, createDyeFieldBuffer,
+         createDyeFieldOutBuffer, createDeltaTimeBuffer, createDecayBuffer, createInjectionAmtBuffer} from './gpu/buffers';
 
+// TODO: cleanup!! abstract out stuff
 async function main() {
   const canvas = document.createElement("canvas");
   canvas.width = window.innerWidth;
@@ -16,15 +18,37 @@ async function main() {
   const { device: device, context: context, format: canvasFormat } = await initWebGPU(canvas);
 
   const mouseBuffer = createMouseBuffer(device);
-  new MouseHandler(canvas, device, mouseBuffer);
+  const mouseHandler = new MouseHandler(canvas, device, mouseBuffer);
+
+  const gridSize = 64;
+
+  // ping-pong update
+  // one buffer holds the current state (input) and the other buffer holds current computation (output)
+  // after running the compute pass, swap the output back to become the new input for the next frame
+  // This prevents data from being overwritten during processing --> new sim starts with the latest state
+  // This ultimately should enable continuous evolution of dye overtime
+  function updateDyeField(
+    device: GPUDevice,
+    dyeFieldBuffer: GPUBuffer,
+    dyeFieldOutBuffer: GPUBuffer
+  ) {
+    const commandEncoder = device.createCommandEncoder();
+    commandEncoder.copyBufferToBuffer(
+      dyeFieldOutBuffer,
+      0,
+      dyeFieldBuffer,
+      0,
+      dyeFieldBuffer.size
+    );
+    device.queue.submit([commandEncoder.finish()]);
+  }
 
   // DEBUG
   // readMouseBuffer(device, mouseBuffer);
 
   // Create render pipeline
-  const { renderPipeline, velPipeline } = createPipelines(device, canvasFormat);
+  const { renderPipeline, velPipeline, advectionPipeline, decayPipeline, injectionPipeline } = createPipelines(device, canvasFormat);
 
-  const gridSize = 64;
   const velBuffer      = createVelBuffer(device, gridSize);
   const gridSizeBuffer = createGridSizeBuffer(device);
   const radiusBuffer   = createRadBuffer(device);
@@ -62,6 +86,79 @@ async function main() {
     device.queue.submit([commandEncoder.finish()]);
   }
 
+  const dyeFieldBuffer = createDyeFieldBuffer(device, gridSize);
+  const dyeFieldOutBuffer = createDyeFieldOutBuffer(device, gridSize);
+  const deltaTimeBuffer = createDeltaTimeBuffer(device);
+
+  const advectionBindGroup = device.createBindGroup({
+    layout: advectionPipeline.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: { buffer: velBuffer } },
+      { binding: 1, resource: { buffer: dyeFieldBuffer } },
+      { binding: 2, resource: { buffer: dyeFieldOutBuffer } },
+      { binding: 3, resource: { buffer: gridSizeBuffer } },
+      { binding: 4, resource: { buffer: deltaTimeBuffer } }
+    ]
+  });
+
+  function runAdvectionComputePass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(advectionPipeline);
+    passEncoder.setBindGroup(0, advectionBindGroup);
+    passEncoder.dispatchWorkgroups(gridSize / 8, gridSize / 8);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  };
+
+  const injectionAmtBuffer = createInjectionAmtBuffer(device);
+
+  const injectionAmtData = new Float32Array([0.2, 0.0, 0.0 , 0.0]);
+  device.queue.writeBuffer(injectionAmtBuffer, 0, injectionAmtData);
+
+  const injectionBindGroup = device.createBindGroup({
+    layout: injectionPipeline.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: { buffer: dyeFieldBuffer } },
+      { binding: 1, resource: { buffer: mouseBuffer } },
+      { binding: 2, resource: { buffer: injectionAmtBuffer } },
+      { binding: 3, resource: { buffer: gridSizeBuffer } }
+    ]
+  });
+
+  function runInjectionComputePass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(injectionPipeline);
+    passEncoder.setBindGroup(0, injectionBindGroup);
+    passEncoder.dispatchWorkgroups(gridSize / 8, gridSize / 8);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  };
+
+  const decayBuffer = createDecayBuffer(device);
+  const decayData = new Float32Array([0.99, 0.0, 0.0, 0.0]); // f32 aligned
+  device.queue.writeBuffer(decayBuffer, 0, decayData);
+
+  const decayBindGroup = device.createBindGroup({
+    layout: decayPipeline.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: { buffer: gridSizeBuffer } },
+      { binding: 1, resource: { buffer: dyeFieldBuffer } },
+      { binding: 2, resource: { buffer: decayBuffer } }
+    ]
+  });
+
+  function runDecayComputePass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(decayPipeline);
+    passEncoder.setBindGroup(0, decayBindGroup);
+    passEncoder.dispatchWorkgroups(gridSize / 8, gridSize / 8);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  };
+
   const canvasSizeBuffer = device.createBuffer({
     size: 2 * Float32Array.BYTES_PER_ELEMENT,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
@@ -72,14 +169,22 @@ async function main() {
   const renderBindGroup = device.createBindGroup({
     layout: renderPipeline.getBindGroupLayout(0),
     entries: [
-      { binding: 0, resource: { buffer: velBuffer } },
-      { binding: 1, resource: { buffer: gridSizeBuffer } },
-      { binding: 2, resource: { buffer: canvasSizeBuffer } }
+      { binding: 0, resource: { buffer: gridSizeBuffer } },
+      { binding: 1, resource: { buffer: canvasSizeBuffer } },
+      { binding: 2, resource: { buffer: dyeFieldBuffer } }
     ]
   });
 
   function renderLoop() {
+
+    if (mouseHandler.isMouseDown) {
+      runInjectionComputePass();
+    }
+
     runComputePass();
+    runAdvectionComputePass();
+    updateDyeField(device, dyeFieldBuffer, dyeFieldOutBuffer);
+    runDecayComputePass();
     // create render pass to draw the quad
     render(device, context, renderPipeline, renderBindGroup);
     // DEBUG
