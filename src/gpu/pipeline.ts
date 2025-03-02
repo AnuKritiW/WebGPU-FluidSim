@@ -4,6 +4,8 @@ import advectionShaderCode from "../shaders/advection.wgsl?raw";
 import decayShaderCode from "../shaders/decay.wgsl?raw";
 import injectionShaderCode from "../shaders/injection.wgsl?raw";
 import divShaderCode from "../shaders/divergence.wgsl?raw"
+import pressureShaderCode from "../shaders/pressure.wgsl?raw"
+import subPressureShaderCode from "../shaders/subPressure.wgsl?raw"
 
 function createRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
   const shaderModule = createShaderModule(device);
@@ -62,6 +64,24 @@ function createDivComputePipeline(device: GPUDevice) {
   });
 }
 
+function createPressureComputePipeline(device: GPUDevice) {
+  const pressureShaderModule = device.createShaderModule({ code: pressureShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: pressureShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function createSubPressureComputePipeline(device: GPUDevice) {
+  const subPressureShaderModule = device.createShaderModule({ code: subPressureShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: subPressureShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
 export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const renderPipeline = createRenderPipeline(device, format);
   const velPipeline = createComputePipeline(device);
@@ -69,6 +89,8 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const decayPipeline = createDecayComputePipeline(device);
   const injectionPipeline = createInjectionComputePipeline(device);
   const divPipeline = createDivComputePipeline(device);
+  const pressurePipeline = createPressureComputePipeline(device);
+  const subPressurePipeline = createSubPressureComputePipeline(device);
 
-  return { renderPipeline, velPipeline, advectionPipeline, decayPipeline, injectionPipeline, divPipeline };
+  return { renderPipeline, velPipeline, advectionPipeline, decayPipeline, injectionPipeline, divPipeline, pressurePipeline, subPressurePipeline };
 }

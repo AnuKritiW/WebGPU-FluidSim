@@ -58,12 +58,36 @@ function createDivBindGroup(device: GPUDevice, divPipeline: GPURenderPipeline, b
   });
 }
 
+function createPressureBindGroup(device: GPUDevice, pressurePipeline: GPURenderPipeline, buffers) {
+  return device.createBindGroup({
+    layout: pressurePipeline.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: { buffer: buffers.divBuf } },
+      { binding: 1, resource: { buffer: buffers.pressureBuf } },
+      { binding: 2, resource: { buffer: buffers.gridSizeBuf } }
+    ]
+  });
+}
+
+function createSubPressureBindGroup(device: GPUDevice, subPressurePipeline: GPURenderPipeline, buffers) {
+  return device.createBindGroup({
+    layout: subPressurePipeline.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: { buffer: buffers.velBuf } },
+      { binding: 1, resource: { buffer: buffers.pressureBuf } },
+      { binding: 2, resource: { buffer: buffers.gridSizeBuf } }
+    ]
+  });
+}
+
 export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any) {
   const velBindGroup = createVelBindGroup(device, pipelines.velPipeline, buffers);
   const advectionBindGroup = createAdvectionBindGroup(device, pipelines.advectionPipeline, buffers);
   const injectionBindGroup = createInjectionBindGroup(device, pipelines.injectionPipeline, buffers);
   const decayBindGroup = createDecayBindGroup(device, pipelines.decayPipeline, buffers);
   const divBindGroup = createDivBindGroup(device, pipelines.divPipeline, buffers);
+  const pressureBindGroup = createPressureBindGroup(device, pipelines.pressurePipeline, buffers);
+  const subPressureBindGroup = createSubPressureBindGroup(device, pipelines.subPressurePipeline, buffers);
 
-  return { velBindGroup, advectionBindGroup, injectionBindGroup, decayBindGroup, divBindGroup };
+  return { velBindGroup, advectionBindGroup, injectionBindGroup, decayBindGroup, divBindGroup, pressureBindGroup, subPressureBindGroup };
 }

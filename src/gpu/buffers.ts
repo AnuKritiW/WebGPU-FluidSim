@@ -81,7 +81,14 @@ function createCanvasSizeBuf(device: GPUDevice) {
 function createDivBuf(device: GPUDevice, gridSize: number) {
   return device.createBuffer({
     size: gridSize * gridSize * Float32Array.BYTES_PER_ELEMENT,
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
+  });
+}
+
+function createPressureBuf(device: GPUDevice, gridSize: number) {
+  return device.createBuffer({
+    size: gridSize * gridSize * Float32Array.BYTES_PER_ELEMENT,
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
   });
 }
 
@@ -98,6 +105,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const decayBuf = createDecayBuf(device);
   const canvasSizeBuf = createCanvasSizeBuf(device);
   const divBuf = createDivBuf(device, gridSize);
+  const pressureBuf = createPressureBuf(device, gridSize);
 
   // Write initial values
   const injectionAmtData = new Float32Array([0.2, 0.0, 0.0 , 0.0]);
@@ -130,6 +138,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
     injectionAmtBuf,
     decayBuf,
     canvasSizeBuf,
-    divBuf
+    divBuf,
+    pressureBuf
   };
 }
