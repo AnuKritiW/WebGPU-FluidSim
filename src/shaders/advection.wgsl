@@ -10,6 +10,31 @@
 @group(0) @binding(3) var<uniform> uGridSize: vec2<f32>;
 @group(0) @binding(4) var<uniform> uDeltaTime: f32; // TODO: currently not initialized so no effect
 
+// Bilinear interpolation
+fn sampleDye(pos: vec2<f32>) -> f32 {
+  let x0 = floor(pos.x);
+  let y0 = floor(pos.y);
+  let x1 = x0 + 1.0;
+  let y1 = y0 + 1.0;
+
+  let fx = pos.x - x0;
+  let fy = pos.y - y0;
+
+  let i0 = u32(x0 + y0 * uGridSize.x);
+  let i1 = u32(x1 + y0 * uGridSize.x);
+  let i2 = u32(x0 + y1 * uGridSize.x);
+  let i3 = u32(x1 + y1 * uGridSize.x);
+
+  let v0 = dyeField[i0];
+  let v1 = dyeField[i1];
+  let v2 = dyeField[i2];
+  let v3 = dyeField[i3];
+
+  let interpX0 = mix(v0, v1, fx);
+  let interpX1 = mix(v2, v3, fx);
+  return mix(interpX0, interpX1, fy);
+}
+
 @compute @workgroup_size(8, 8)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   // get grid cell position from the workgroup index
@@ -33,13 +58,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   
   // Clamp the backtraced position to be within the grid bounds
   let clampedPos = clamp(backPos, vec2<f32>(0.0), uGridSize - vec2<f32>(1.0));
-  
-  // nearest neighbor sampling
-  // TODO: bilenear interpolation instead
-  let sampleX = u32(clampedPos.x);
-  let sampleY = u32(clampedPos.y);
-  let sampleIndex = sampleX + sampleY * u32(uGridSize.x);
-  
-  // Write the advected dye value into the output buffer
-  dyeFieldOut[index] = dyeField[sampleIndex];
+
+  dyeFieldOut[index] = sampleDye(clampedPos);
 }
