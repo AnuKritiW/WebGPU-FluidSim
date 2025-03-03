@@ -49,5 +49,12 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let clampedPos = clamp(backPos, vec2<f32>(0.0), uGridSize - vec2<f32>(1.0));
 
   // Bilinear Interpolation
-  velOut[index] = sampleVelocity(clampedPos);
+  let advectedVelocity =sampleVelocity(clampedPos);
+
+  let epsilon: f32 = 1e-4;
+  if (length(advectedVelocity) < epsilon) {
+    velOut[index] = vec2<f32>(0.0);
+  } else {
+    velOut[index] = advectedVelocity;
+  }
 }

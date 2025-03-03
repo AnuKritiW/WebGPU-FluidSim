@@ -16,12 +16,14 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     runDecayComputePass();
     resetDivergenceBuffer();
     runDivergenceComputePass()
-    for (let i = 0; i < 60; i++) {  // 20 iterations (tune this value)
+    for (let i = 0; i < 20; i++) {  // 20 iterations (tune this value)
       runPressureComputePass();  // dispatch pressure.wgsl
     }
     runSubPressureComputePass();  // dispatch subtractPressure.wgsl
     runVelocityAdvectionPass();
+    updateVelocityField();
     runVorticityComputePass();
+    runAddVorticityComputePass();
 
     // await readDivergenceBuffer(device, buffers.divBuf);
 
@@ -150,6 +152,16 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
   }
+
+  function runAddVorticityComputePass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(pipelines.addVorticityPipeline);
+    passEncoder.setBindGroup(0, bindGroups.addVorticityBindGroup);
+    passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  }
   
   // ping-pong update
   // one buffer holds the current state (input) and the other buffer holds current computation (output)
@@ -164,6 +176,18 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
       buffers.dyeFieldBuf,
       0,
       buffers.dyeFieldBuf.size
+    );
+    device.queue.submit([commandEncoder.finish()]);
+  }
+
+  function updateVelocityField() {
+    const commandEncoder = device.createCommandEncoder();
+    commandEncoder.copyBufferToBuffer(
+      buffers.velOutBuf,
+      0,
+      buffers.velBuf,
+      0,
+      buffers.velBuf.size
     );
     device.queue.submit([commandEncoder.finish()]);
   }

@@ -113,6 +113,13 @@ function createVorticityStrengthBuf(device: GPUDevice) {
   });
 }
 
+function createAddVorticityScaleBuf(device: GPUDevice) {
+  return device.createBuffer({
+    size: 4 * Float32Array.BYTES_PER_ELEMENT, // f32 padded to vec4<f32>
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+  });
+}
+
 export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const mouseBuf = createMouseBuf(device);
   const velBuf      = createVelBuf(device, gridSize);
@@ -130,15 +137,16 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const pressureBuf = createPressureBuf(device, gridSize);
   const vorticityForceBuf = createVorticityForceBuf(device, gridSize);
   const vorticityStrengthBuf = createVorticityStrengthBuf(device);
+  const vorticityScaleBuf = createAddVorticityScaleBuf(device);
 
   // Write initial values
-  const injectionAmtData = new Float32Array([0.9, 0.0, 0.0 , 0.0]);
+  const injectionAmtData = new Float32Array([0.5, 0.0, 0.0 , 0.0]);
   device.queue.writeBuffer(injectionAmtBuf, 0, injectionAmtData);
 
   const gridSizeData = new Float32Array([gridSize, gridSize]); // vec2<f32>
   // TODO: adjust these parameters to see velocity injection more/less easily
-  const radiusData   = new Float32Array([5.0, 0.0, 0.0, 0.0]); // f32 aligned
-  const strengthData = new Float32Array([5.0, 0.0, 0.0, 0.0]); // f32 aligned
+  const radiusData   = new Float32Array([2.0, 0.0, 0.0, 0.0]); // f32 aligned
+  const strengthData = new Float32Array([1.0, 0.0, 0.0, 0.0]); // f32 aligned
 
   device.queue.writeBuffer(gridSizeBuf, 0, gridSizeData);
   device.queue.writeBuffer(radiusBuf, 0, radiusData);
@@ -150,8 +158,11 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const canvasSizeData = new Float32Array([canvas.width, canvas.height]);
   device.queue.writeBuffer(canvasSizeBuf, 0, canvasSizeData);
 
-  const vorticityStrengthData = new Float32Array([1.0, 0.0, 0.0, 0.0]);
+  const vorticityStrengthData = new Float32Array([0.3, 0.0, 0.0, 0.0]);
   device.queue.writeBuffer(vorticityStrengthBuf, 0, vorticityStrengthData);
+
+  const vorticityScaleData = new Float32Array([0.3, 0.0, 0.0, 0.0]);
+  device.queue.writeBuffer(vorticityScaleBuf, 0, vorticityScaleData);
 
   return {
     mouseBuf,
@@ -169,6 +180,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
     divBuf,
     pressureBuf,
     vorticityForceBuf,
-    vorticityStrengthBuf
+    vorticityStrengthBuf,
+    vorticityScaleBuf
   };
 }

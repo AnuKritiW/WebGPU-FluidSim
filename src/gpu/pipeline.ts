@@ -8,6 +8,7 @@ import pressureShaderCode from "../shaders/pressure.wgsl?raw"
 import subPressureShaderCode from "../shaders/subPressure.wgsl?raw"
 import velAdvectionShaderCode from "../shaders/velAdvection.wgsl?raw"
 import vorticityShaderCode from "../shaders/vorticity.wgsl?raw"
+import addVorticityShaderCode from "../shaders/addVorticity.wgsl?raw"
 
 function createRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
   const shaderModule = device.createShaderModule({code: renderShaderCode});
@@ -102,6 +103,15 @@ function createVorticityComputePipeline(device: GPUDevice) {
   });
 }
 
+function createAddVorticityComputePipeline(device: GPUDevice) {
+  const addVorticityShaderModule = device.createShaderModule({ code: addVorticityShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: addVorticityShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
 export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const renderPipeline = createRenderPipeline(device, format);
   const velPipeline = createComputePipeline(device);
@@ -113,7 +123,9 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const subPressurePipeline = createSubPressureComputePipeline(device);
   const advectVelPipeline = createAdvectVelComputePipeline(device);
   const vorticityPipeline = createVorticityComputePipeline(device);
+  const addVorticityPipeline = createAddVorticityComputePipeline(device);
 
   return { renderPipeline, velPipeline, advectionPipeline, decayPipeline, injectionPipeline,
-           divPipeline, pressurePipeline, subPressurePipeline, advectVelPipeline, vorticityPipeline };
+           divPipeline, pressurePipeline, subPressurePipeline, advectVelPipeline, vorticityPipeline,
+           addVorticityPipeline };
 }

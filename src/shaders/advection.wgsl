@@ -12,27 +12,52 @@
 
 // Bilinear interpolation
 fn sampleDye(pos: vec2<f32>) -> f32 {
-  let x0 = floor(pos.x);
-  let y0 = floor(pos.y);
-  let x1 = x0 + 1.0;
-  let y1 = y0 + 1.0;
+  let x0f = floor(pos.x);
+  let y0f = floor(pos.y);
+  let x1f = x0f + 1.0;
+  let y1f = y0f + 1.0;
 
-  let fx = pos.x - x0;
-  let fy = pos.y - y0;
+  let fx = pos.x - x0f;
+  let fy = pos.y - y0f;
 
-  let i0 = u32(x0 + y0 * uGridSize.x);
-  let i1 = u32(x1 + y0 * uGridSize.x);
-  let i2 = u32(x0 + y1 * uGridSize.x);
-  let i3 = u32(x1 + y1 * uGridSize.x);
+  let maxX = i32(uGridSize.x) - 1;
+  let maxY = i32(uGridSize.y) - 1;
 
-  let v0 = dyeField[i0];
-  let v1 = dyeField[i1];
-  let v2 = dyeField[i2];
-  let v3 = dyeField[i3];
+  let x0 = clamp(i32(x0f), 0, maxX);
+  let x1 = clamp(i32(x1f), 0, maxX);
+  let y0 = clamp(i32(y0f), 0, maxY);
+  let y1 = clamp(i32(y1f), 0, maxY);
 
+  // Convert 2D -> 1D indices
+  let i0 = x0 + y0 * i32(uGridSize.x);
+  let i1 = x1 + y0 * i32(uGridSize.x);
+  let i2 = x0 + y1 * i32(uGridSize.x);
+  let i3 = x1 + y1 * i32(uGridSize.x);
+
+  // Fetch the four corners
+  let v0 = dyeField[u32(i0)];
+  let v1 = dyeField[u32(i1)];
+  let v2 = dyeField[u32(i2)];
+  let v3 = dyeField[u32(i3)];
+
+  // Bilinear interpolation
   let interpX0 = mix(v0, v1, fx);
   let interpX1 = mix(v2, v3, fx);
   return mix(interpX0, interpX1, fy);
+
+  // let i0 = u32(x0 + y0 * uGridSize.x);
+  // let i1 = u32(x1 + y0 * uGridSize.x);
+  // let i2 = u32(x0 + y1 * uGridSize.x);
+  // let i3 = u32(x1 + y1 * uGridSize.x);
+
+  // let v0 = dyeField[i0];
+  // let v1 = dyeField[i1];
+  // let v2 = dyeField[i2];
+  // let v3 = dyeField[i3];
+
+  // let interpX0 = mix(v0, v1, fx);
+  // let interpX1 = mix(v2, v3, fx);
+  // return mix(interpX0, interpX1, fy);
 }
 
 @compute @workgroup_size(8, 8)

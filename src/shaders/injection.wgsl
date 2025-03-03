@@ -21,6 +21,12 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let injectionPosGrid = uMouse.xy * uGridSize;
   let dist = distance(pos, injectionPosGrid);
 
+  // stretch factor
+  // allows the 'splat' to stretch in the direction of motion
+  let stretchFactor = max(1.0, length(uMouse.zw) * 2.0);
+  let diff = pos - injectionPosGrid;
+  let anisDiff = vec2<f32>(diff.x * stretchFactor, diff.y);
+
   // Define injection radius – within which injection occurs.
   let radius = 1.5;
   if (dist < radius) {
@@ -28,7 +34,8 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     // let weight = 1.0 - (dist / radius);
 
     // Gaussian weight for smoother injection
-    let weight = exp(- (dist * dist) / (radius * radius));
+    // let weight = exp(- (dist * dist) / (radius * radius));
+    let weight = exp(- dot(anisDiff, anisDiff) / (radius * radius));
 
     // Add injection
     // blends the new injection to any existing dye values within a clamped range
