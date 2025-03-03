@@ -1,4 +1,4 @@
-import { createShaderModule } from "./shaders";
+import renderShaderCode from "../shaders/render.wgsl?raw";
 import updateVelocityShaderCode from "../shaders/updateVel.wgsl?raw";
 import advectionShaderCode from "../shaders/advection.wgsl?raw";
 import decayShaderCode from "../shaders/decay.wgsl?raw";
@@ -6,9 +6,11 @@ import injectionShaderCode from "../shaders/injection.wgsl?raw";
 import divShaderCode from "../shaders/divergence.wgsl?raw"
 import pressureShaderCode from "../shaders/pressure.wgsl?raw"
 import subPressureShaderCode from "../shaders/subPressure.wgsl?raw"
+import velAdvectionShaderCode from "../shaders/velAdvection.wgsl?raw"
+import vorticityShaderCode from "../shaders/vorticity.wgsl?raw"
 
 function createRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
-  const shaderModule = createShaderModule(device);
+  const shaderModule = device.createShaderModule({code: renderShaderCode});
 
   return device.createRenderPipeline({
     vertex: { module: shaderModule, entryPoint: "vs_main" },                          // positions the quad
@@ -82,6 +84,24 @@ function createSubPressureComputePipeline(device: GPUDevice) {
   });
 }
 
+function createAdvectVelComputePipeline(device: GPUDevice) {
+  const advectVelShaderModule = device.createShaderModule({ code: velAdvectionShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: advectVelShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function createVorticityComputePipeline(device: GPUDevice) {
+  const vorticityShaderModule = device.createShaderModule({ code: vorticityShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: vorticityShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
 export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const renderPipeline = createRenderPipeline(device, format);
   const velPipeline = createComputePipeline(device);
@@ -91,6 +111,9 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const divPipeline = createDivComputePipeline(device);
   const pressurePipeline = createPressureComputePipeline(device);
   const subPressurePipeline = createSubPressureComputePipeline(device);
+  const advectVelPipeline = createAdvectVelComputePipeline(device);
+  const vorticityPipeline = createVorticityComputePipeline(device);
 
-  return { renderPipeline, velPipeline, advectionPipeline, decayPipeline, injectionPipeline, divPipeline, pressurePipeline, subPressurePipeline };
+  return { renderPipeline, velPipeline, advectionPipeline, decayPipeline, injectionPipeline,
+           divPipeline, pressurePipeline, subPressurePipeline, advectVelPipeline, vorticityPipeline };
 }

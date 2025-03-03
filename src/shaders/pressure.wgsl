@@ -31,6 +31,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   var newPressure = alpha * (divergence[index] + pressureLeft + pressureRight + pressureTop + pressureBottom) / 4.0 +
                    (1.0 - alpha) * pressure[index];
 
-  pressure[index] = clamp(newPressure, -10.0, 10.0);
+  // pressure[index] = newPressure;
+  pressure[index] = clamp(newPressure, -100.0, 100.0);
   // pressure[index] = (divergence[index] + pressureLeft + pressureRight + pressureTop + pressureBottom) / 4.0;
 }

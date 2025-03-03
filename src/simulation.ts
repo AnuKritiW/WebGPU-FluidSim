@@ -1,7 +1,7 @@
 import { render } from './renderer';
 
 export function startSimulation({ device, context, buffers, bindGroups, pipelines, mouseHandler }) {
-  const gridSize = 64;  
+  const gridSize = 256;
   async function simulationLoop() {
     updateDeltaTime(device, buffers);
 
@@ -20,6 +20,8 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
       runPressureComputePass();  // dispatch pressure.wgsl
     }
     runSubPressureComputePass();  // dispatch subtractPressure.wgsl
+    runVelocityAdvectionPass();
+    runVorticityComputePass();
 
     // await readDivergenceBuffer(device, buffers.divBuf);
 
@@ -60,6 +62,11 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     const currentTime = performance.now();
     const deltaTime = (currentTime - lastFrameTime) / 1000.0; // Convert ms → seconds
     lastFrameTime = currentTime;
+
+    // console.log("Delta Time:", deltaTime);
+    // if(deltaTime < 0.005) {
+    //   console.warn("Delta time is very low:", deltaTime);
+    // }
 
     const deltaTimeData = new Float32Array([deltaTime]);
     device.queue.writeBuffer(buffers.deltaTimeBuf, 0, deltaTimeData);
@@ -119,6 +126,26 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     const passEncoder = commandEncoder.beginComputePass();
     passEncoder.setPipeline(pipelines.subPressurePipeline);
     passEncoder.setBindGroup(0, bindGroups.subPressureBindGroup);
+    passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  }
+
+  function runVelocityAdvectionPass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(pipelines.advectVelPipeline);
+    passEncoder.setBindGroup(0, bindGroups.advectVelBindGroup);
+    passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  }
+
+  function runVorticityComputePass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(pipelines.vorticityPipeline);
+    passEncoder.setBindGroup(0, bindGroups.vorticityBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);

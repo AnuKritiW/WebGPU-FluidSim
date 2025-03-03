@@ -80,6 +80,30 @@ function createSubPressureBindGroup(device: GPUDevice, subPressurePipeline: GPUR
   });
 }
 
+function createAdvectVelBindGroup(device: GPUDevice, advectVelPipeline: GPURenderPipeline, buffers) {
+  return device.createBindGroup({
+    layout: advectVelPipeline.getBindGroupLayout(0),
+    entries: [
+      {binding: 0, resource: { buffer: buffers.velBuf } },
+      {binding: 1, resource: { buffer: buffers.velOutBuf } },
+      {binding: 2, resource: { buffer: buffers.gridSizeBuf } },
+      {binding: 3, resource: { buffer: buffers.deltaTimeBuf } }
+    ]
+  });
+}
+
+function createVoticityBindGroup(device: GPUDevice, vorticityPipeline: GPURenderPipeline, buffers) {
+  return device.createBindGroup({
+    layout: vorticityPipeline.getBindGroupLayout(0),
+    entries: [
+      {binding: 0, resource: { buffer: buffers.velBuf } },
+      {binding: 1, resource: { buffer: buffers.vorticityForceBuf } },
+      {binding: 2, resource: { buffer: buffers.gridSizeBuf } },
+      {binding: 3, resource: { buffer: buffers.vorticityStrengthBuf } }
+    ]
+  });
+}
+
 export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any) {
   const velBindGroup = createVelBindGroup(device, pipelines.velPipeline, buffers);
   const advectionBindGroup = createAdvectionBindGroup(device, pipelines.advectionPipeline, buffers);
@@ -88,6 +112,9 @@ export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any
   const divBindGroup = createDivBindGroup(device, pipelines.divPipeline, buffers);
   const pressureBindGroup = createPressureBindGroup(device, pipelines.pressurePipeline, buffers);
   const subPressureBindGroup = createSubPressureBindGroup(device, pipelines.subPressurePipeline, buffers);
+  const advectVelBindGroup = createAdvectVelBindGroup(device, pipelines.advectVelPipeline, buffers);
+  const vorticityBindGroup = createVoticityBindGroup(device, pipelines.vorticityPipeline, buffers);
 
-  return { velBindGroup, advectionBindGroup, injectionBindGroup, decayBindGroup, divBindGroup, pressureBindGroup, subPressureBindGroup };
+  return { velBindGroup, advectionBindGroup, injectionBindGroup, decayBindGroup, divBindGroup,
+           pressureBindGroup, subPressureBindGroup, advectVelBindGroup, vorticityBindGroup };
 }
