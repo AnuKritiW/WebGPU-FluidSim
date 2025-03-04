@@ -2,7 +2,7 @@
 @group(0) @binding(0) var<storage, read_write> dye: array<f32>;
 @group(0) @binding(1) var<uniform> uMouse : vec4<f32>; // (posX, posY, velX, velY)
 @group(0) @binding(2) var<uniform> injectionAmount: f32;
-@group(0) @binding(3) var<uniform> uGridSize: vec2<f32>;
+@group(0) @binding(3) var<uniform> uGridSize: vec4<f32>; // (gridWidth, gridHeight, dx, rdx)
 
 @compute @workgroup_size(8,8)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
@@ -18,17 +18,19 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let index = u32(pos.x + pos.y * uGridSize.x);
 
   // Distance from cell to the injection position
-  let injectionPosGrid = uMouse.xy * uGridSize;
+  let injectionPosGrid = uMouse.xy * uGridSize.xy;
   let dist = distance(pos, injectionPosGrid);
 
   // stretch factor
   // allows the 'splat' to stretch in the direction of motion
-  let stretchFactor = max(1.0, length(uMouse.zw) * 2.0);
+  // let mouseVelCell = uMouse.zw * uGridSize.xy;
+  // let stretchFactor = max(1.0, length(mouseVelCell) * 5.0);
+  let stretchFactor = max(1.0, length(uMouse.zw) * 5.0);
   let diff = pos - injectionPosGrid;
   let anisDiff = vec2<f32>(diff.x * stretchFactor, diff.y);
 
   // Define injection radius – within which injection occurs.
-  let radius = 1.5;
+  let radius = 2.5;
   if (dist < radius) {
     // Use a weight so that cells nearer the injection point receive more dye.
     // let weight = 1.0 - (dist / radius);

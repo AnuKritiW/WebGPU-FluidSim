@@ -1,7 +1,6 @@
 import { render } from './renderer';
 
-export function startSimulation({ device, context, buffers, bindGroups, pipelines, mouseHandler }) {
-  const gridSize = 256;
+export function startSimulation({ device, context, buffers, bindGroups, pipelines, mouseHandler, gridSize }) {
   async function simulationLoop() {
     updateDeltaTime(device, buffers);
 
@@ -16,7 +15,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     runDecayComputePass();
     resetDivergenceBuffer();
     runDivergenceComputePass()
-    for (let i = 0; i < 20; i++) {  // 20 iterations (tune this value)
+    for (let i = 0; i < 60; i++) {  // 20 iterations (tune this value)
       runPressureComputePass();  // dispatch pressure.wgsl
     }
     runSubPressureComputePass();  // dispatch subtractPressure.wgsl
@@ -62,12 +61,16 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 
   function updateDeltaTime(device, buffers) {
     const currentTime = performance.now();
-    const deltaTime = (currentTime - lastFrameTime) / 1000.0; // Convert ms → seconds
+    let deltaTime = (currentTime - lastFrameTime) / 1000.0; // Convert ms → seconds
     lastFrameTime = currentTime;
 
     // console.log("Delta Time:", deltaTime);
     // if(deltaTime < 0.005) {
     //   console.warn("Delta time is very low:", deltaTime);
+    // }
+
+    // if (deltaTime > (1.0 / 60.0)) {
+    //   deltaTime = (1.0 / 60.0);
     // }
 
     const deltaTimeData = new Float32Array([deltaTime]);

@@ -27,10 +27,13 @@ fn ID(x : f32, y : f32) -> u32 {
 
 fn gaussianWeight(p : vec2<f32>, center : vec2<f32>, rad : f32, vel : vec2<f32>) -> f32 {
     var diff = p - center;
+
+    let dir = normalize(vel);
     
     // Anisotropic scaling: Stretch splat based on velocity direction
-    let stretchFactor = max(1.0, length(vel) * 2.0);
-    diff.x *= stretchFactor;
+    // let stretchFactor = max(1.0, length(vel) * 2.0);
+    diff.x *= (1.0 + 2.0 * abs(dir.x));//stretchFactor;
+    diff.y *= (1.0 + 2.0 * abs(dir.y));
 
     let distSq = dot(diff, diff);
     let radSq = (rad * rad);
@@ -54,7 +57,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
     let index = ID(pos.x, pos.y);
     let mousePos = uMouse.xy * uGridSize;
-    let mouseVel = uMouse.zw * uStrength;  
+    let mouseVel = uMouse.zw * uStrength;
 
     // DEBUG
     // if (distance(pos, mousePos) < 5.0) {

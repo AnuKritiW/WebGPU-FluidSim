@@ -7,8 +7,8 @@
 @group(0) @binding(1) var<storage, read> dyeField: array<f32>;
 // for ping-pong update
 @group(0) @binding(2) var<storage, read_write> dyeFieldOut: array<f32>;
-@group(0) @binding(3) var<uniform> uGridSize: vec2<f32>;
-@group(0) @binding(4) var<uniform> uDeltaTime: f32; // TODO: currently not initialized so no effect
+@group(0) @binding(3) var<uniform> uGridSize: vec4<f32>; // (gridWidth, gridHeight, dx, rdx)
+@group(0) @binding(4) var<uniform> uDeltaTime: f32;
 
 // Bilinear interpolation
 fn sampleDye(pos: vec2<f32>) -> f32 {
@@ -44,20 +44,6 @@ fn sampleDye(pos: vec2<f32>) -> f32 {
   let interpX0 = mix(v0, v1, fx);
   let interpX1 = mix(v2, v3, fx);
   return mix(interpX0, interpX1, fy);
-
-  // let i0 = u32(x0 + y0 * uGridSize.x);
-  // let i1 = u32(x1 + y0 * uGridSize.x);
-  // let i2 = u32(x0 + y1 * uGridSize.x);
-  // let i3 = u32(x1 + y1 * uGridSize.x);
-
-  // let v0 = dyeField[i0];
-  // let v1 = dyeField[i1];
-  // let v2 = dyeField[i2];
-  // let v3 = dyeField[i3];
-
-  // let interpX0 = mix(v0, v1, fx);
-  // let interpX1 = mix(v2, v3, fx);
-  // return mix(interpX0, interpX1, fy);
 }
 
 @compute @workgroup_size(8, 8)
@@ -75,14 +61,16 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   
   // Get cell velocity
   let v = velocityField[index];
+
+  let displacement = v * (uDeltaTime * uGridSize.w);
   
   // Semi-Lagrangian backtrace
   // Calculate the position where the fluid at this cell came from
   // Euler backtracing  -- TODO: explore other time integration methods? Runge Kutta?
-  let backPos = pos - v * uDeltaTime;
+  let backPos = pos - displacement; //v * uDeltaTime;
   
   // Clamp the backtraced position to be within the grid bounds
-  let clampedPos = clamp(backPos, vec2<f32>(0.0), uGridSize - vec2<f32>(1.0));
+  let clampedPos = clamp(backPos, vec2<f32>(0.0), uGridSize.xy - vec2<f32>(1.0));
 
   dyeFieldOut[index] = sampleDye(clampedPos);
 }

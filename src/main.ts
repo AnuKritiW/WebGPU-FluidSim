@@ -16,7 +16,7 @@ async function main() {
   // Initialize WebGPU
   const { device: device, context: context, format: canvasFormat } = await initWebGPU(canvas);
 
-  const gridSize = 256;
+  const gridSize = 512;
   const buffers = createBuffers(device, gridSize, canvas);
   const pipelines = createPipelines(device, canvasFormat);
   const bindGroups = createBindGroups(device, pipelines, buffers);
@@ -31,6 +31,7 @@ async function main() {
     bindGroups,
     pipelines,
     mouseHandler,
+    gridSize
   });
 }
 

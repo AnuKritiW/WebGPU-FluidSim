@@ -8,8 +8,12 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let gridWidth: u32 = u32(uGridSize.x);
   let x: u32 = global_id.x;
   let y: u32 = global_id.y;
-  if (x >= gridWidth || y >= u32(uGridSize.y)) { return; }
+
+  if (x >= gridWidth || y >= u32(uGridSize.y)) {
+    return;
+  }
+
   let index: u32 = x + y * gridWidth;
   // Add the scaled vorticity force to the velocity field
-  velocity[index] = velocity[index] + vorticityForce[index] * uVorticityScale;
+  velocity[index] += vorticityForce[index] * uVorticityScale;
 }

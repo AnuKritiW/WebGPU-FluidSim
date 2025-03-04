@@ -16,7 +16,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   }
 
   // Compute the 1D index for buffers
-  let index = x + y * gridWidth;
+  let index: u32 = x + y * gridWidth;
   
   // Approximate curl (only z-component in 2D: curl = ∂v/∂x - ∂u/∂y)
   let left = select(velocity[index].y, velocity[index - 1u].y, (x > 0u));
