@@ -18,7 +18,7 @@ For each cell in the grid:
 
 @group(0) @binding(0) var<storage, read> velocity: array<vec2<f32>>;
 @group(0) @binding(1) var<storage, read_write> divergence: array<f32>;
-@group(0) @binding(2) var<uniform> uGridSize: vec2<f32>;
+@group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;;
 
 @compute @workgroup_size(8, 8)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {

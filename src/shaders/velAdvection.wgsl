@@ -2,7 +2,7 @@
 // Reads the current velocity field (velIn) and writes the advected field into velOut.
 @group(0) @binding(0) var<storage, read> velIn: array<vec2<f32>>;
 @group(0) @binding(1) var<storage, read_write> velOut: array<vec2<f32>>;
-@group(0) @binding(2) var<uniform> uGridSize: vec2<f32>;
+@group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;;
 @group(0) @binding(3) var<uniform> uDeltaTime: f32;
 
 // Example modification for bilinear sampling in velocity advection:
