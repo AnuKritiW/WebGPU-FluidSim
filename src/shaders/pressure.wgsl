@@ -1,7 +1,8 @@
 // pressure compute shader
 @group(0) @binding(0) var<storage, read> divergence: array<f32>;
-@group(0) @binding(1) var<storage, read_write> pressure: array<f32>;
-@group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;;
+@group(0) @binding(1) var<storage, read> pressure: array<f32>;
+@group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;
+@group(0) @binding(3) var<storage, read_write> pressureOut: array<f32>;
 
 @compute @workgroup_size(8, 8)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
@@ -25,12 +26,9 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   
   // Average the neighboring pressures and add the local divergence.
   // In a typical Jacobi iteration for the Poisson equation,
-  // pressure_new = (divergence + (pressure_left + pressure_right + pressure_top + pressure_bottom)) / 4.0
   let alpha: f32 = 0.3; // relaxation factor
   var newPressure = alpha * (divergence[index] + pressureLeft + pressureRight + pressureTop + pressureBottom) / 4.0 +
                    (1.0 - alpha) * pressure[index];
 
-  // pressure[index] = newPressure;
-  pressure[index] = clamp(newPressure, -100.0, 100.0);
-  // pressure[index] = (divergence[index] + pressureLeft + pressureRight + pressureTop + pressureBottom) / 4.0;
+  pressureOut[index] = newPressure;
 }
