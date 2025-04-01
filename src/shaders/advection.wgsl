@@ -46,21 +46,49 @@ fn sampleDye(pos: vec2<f32>) -> f32 {
   return mix(interpX0, interpX1, fy);
 }
 
+// TODO: abstract out common code with above
+fn sampleVelocity(pos: vec2<f32>) -> vec2<f32> {
+  let x0 = floor(pos.x);
+  let y0 = floor(pos.y);
+  let x1 = x0 + 1.0;
+  let y1 = y0 + 1.0;
+
+  let fx = pos.x - x0;
+  let fy = pos.y - y0;
+
+  let i0 = u32(x0 + y0 * uGridSize.x);
+  let i1 = u32(x1 + y0 * uGridSize.x);
+  let i2 = u32(x0 + y1 * uGridSize.x);
+  let i3 = u32(x1 + y1 * uGridSize.x);
+
+  let v0 = velocityField[i0];
+  let v1 = velocityField[i1];
+  let v2 = velocityField[i2];
+  let v3 = velocityField[i3];
+
+  let interpX0 = mix(v0, v1, fx);
+  let interpX1 = mix(v2, v3, fx);
+  return mix(interpX0, interpX1, fy);
+}
+
 @compute @workgroup_size(8, 8)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-  // get grid cell position from the workgroup index
-  let pos = vec2<f32>(global_id.xy);
-  
   // Bounds check
-  if (pos.x >= uGridSize.x || pos.y >= uGridSize.y) {
+  let x = global_id.x;
+  let y = global_id.y;
+  if (x >= (u32(uGridSize.x)-1) || y >= (u32(uGridSize.y)-1)) {
     return;
   }
-  
+
   // Compute the 1D index for buffers
-  let index = u32(pos.x + pos.y * uGridSize.x);
+  let index = x + y * u32(uGridSize.x);
+
+  // get grid cell position from the workgroup index
+  let pos = vec2<f32>(f32(x), f32(y));
   
   // Get cell velocity
-  let v = velocityField[index];
+  // let v = velocityField[index];
+  let v = sampleVelocity(pos);
 
   let displacement = v * (uDeltaTime * uGridSize.w);
   
