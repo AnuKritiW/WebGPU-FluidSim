@@ -19,58 +19,40 @@ in the direction of the mouse movement.
 // Stores the strength of the applied force
 @group(0) @binding(4) var<uniform> uStrength : f32;
 
-// In WebGPU, storage buffers use 1D indexing
-// Helper function to convert (x,y) coords into a 1D array index
-fn ID(x : f32, y : f32) -> u32 {
-    return u32(x + y * uGridSize.x);
-}
+// Stores deltaTime (time between frames)
+@group(0) @binding(5) var<uniform> uDeltaTime : f32;
 
-fn gaussianWeight(p : vec2<f32>, center : vec2<f32>, rad : f32, vel : vec2<f32>) -> f32 {
+
+// Gaussian function for splatting velocity influence
+fn gaussianWeight(p : vec2<f32>, center : vec2<f32>, rad : f32) -> f32 {
     var diff = p - center;
-
-    let dir = normalize(vel);
-    
-    // Anisotropic scaling: Stretch splat based on velocity direction
-    // let stretchFactor = max(1.0, length(vel) * 2.0);
-    diff.x *= (1.0 + 2.0 * abs(dir.x));//stretchFactor;
-    diff.y *= (1.0 + 2.0 * abs(dir.y));
-
     let distSq = dot(diff, diff);
-    let radSq = (rad * rad);
-    let falloff = exp(-distSq / radSq); // exponential decay function
-
-    // Threshold to prevent infinite spread
-    // Forces only apply within a 4× radius region
-    // Prevents unnecessary calculations on distant pixels
-    return select(0.0, falloff, distSq < radSq * 4.0);
+    let invRadiusSquared = 1.0 / (rad * rad);
+    return exp(-distSq * invRadiusSquared); // Exponential falloff
 }
 
 @compute @workgroup_size(8, 8)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-    // convert workgroup index into a 2d pos
-    let pos = vec2<f32>(global_id.xy);
 
-    // check for grid out of bounds
-    if (pos.x >= uGridSize.x || pos.y >= uGridSize.y) {
+    // Bounds check
+    let x = global_id.x;
+    let y = global_id.y;
+    if (x >= u32(uGridSize.x) || y >= u32(uGridSize.y)) {
         return;
     }
 
-    let index = ID(pos.x, pos.y);
-    let mousePos = uMouse.xy * uGridSize;
-    let mouseVel = uMouse.zw * uStrength;
+    // Compute the 1D index for buffers
+    let index = x + y * u32(uGridSize.x);
 
-    // DEBUG
-    // if (distance(pos, mousePos) < 5.0) {
-    //     // Force the cell to have a high velocity
-    //     // We forcibly assign (1,0) to give a speed of 1 -> red in render
-    //     // TODO: Adjust the parameters after Advection and other shaders have been added -- like uStrength and uRad
-    //     vel[index] = vec2<f32>(1.0, 0.0);
-    //     return;
-    // }
+    // get grid cell position from the workgroup index
+    let pos = vec2<f32>(f32(x), f32(y));
 
-    let influence = gaussianWeight(pos, mousePos, uRad, mouseVel);
+    let mousePosGrid = uMouse.xy * uGridSize.xy; // convert mouse position to grid space coordinates
+    let mouseVel = uMouse.zw * uStrength; // amplify mouse velocity by strength for effect
 
-    // Apply force, with a velocity scaling factor for more fluidity
-    // Higher vel increases influence, creating a natural swirling effect
-    vel[index] += mouseVel * influence * (0.5 + 0.5 * length(mouseVel));
+    let dir = pos - mousePosGrid;
+
+    let influence = gaussianWeight(pos, mousePosGrid, uRad);
+
+    vel[index] += mouseVel * influence * uDeltaTime;
 }
