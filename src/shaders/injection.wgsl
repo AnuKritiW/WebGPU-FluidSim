@@ -6,41 +6,44 @@
 
 @compute @workgroup_size(8,8)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-  // get grid cell position from the workgroup index
-  let pos = vec2<f32>(global_id.xy);
+
+  if (uMouse.z == 0.0 && uMouse.w == 0.0) {
+    return;
+  }
 
   // Bounds check
-  if (pos.x >= uGridSize.x || pos.y >= uGridSize.y) {
+  let x = global_id.x;
+  let y = global_id.y;
+  if (x >= u32(uGridSize.x) || y >= u32(uGridSize.y)) {
     return;
   }
 
   // Compute the 1D index for buffers
-  let index = u32(pos.x + pos.y * uGridSize.x);
+  let index = x + y * u32(uGridSize.x);
+
+  // get grid cell position from the workgroup index
+  let pos = vec2<f32>(f32(x), f32(y));
 
   // Distance from cell to the injection position
-  let injectionPosGrid = uMouse.xy * uGridSize.xy;
-  let dist = distance(pos, injectionPosGrid);
+  let injectionPosGrid = uMouse.xy * uGridSize.xy; // convert mouse position to grid space coordinates
+  // let injectionPosGrid = vec2<f32>(uGridSize.x * 0.5, uGridSize.y * 0.5); // debug: center of the grid
 
-  // stretch factor
-  // allows the 'splat' to stretch in the direction of motion
-  // let mouseVelCell = uMouse.zw * uGridSize.xy;
-  // let stretchFactor = max(1.0, length(mouseVelCell) * 5.0);
-  let stretchFactor = max(1.0, length(uMouse.zw) * 5.0);
+  // since (canvas size) != (grid size), compute aspect-corrected offset to ensure splat is not distorted
   let diff = pos - injectionPosGrid;
-  let anisDiff = vec2<f32>(diff.x * stretchFactor, diff.y);
+  let aspect = uGridSize.x / uGridSize.y;
+  let adjDiff = vec2<f32>(diff.x * aspect, diff.y);
+  let distSquared = dot(adjDiff, adjDiff);
 
-  // Define injection radius – within which injection occurs.
+  // Define injection radius in grid units – within which injection occurs.
   let radius = 2.5;
-  if (dist < radius) {
-    // Use a weight so that cells nearer the injection point receive more dye.
-    // let weight = 1.0 - (dist / radius);
 
-    // Gaussian weight for smoother injection
-    // let weight = exp(- (dist * dist) / (radius * radius));
-    let weight = exp(- dot(anisDiff, anisDiff) / (radius * radius));
+  // Gaussian weight for smoother injection --> weight = exp(-distSquared / (radius * radius));
+  // optimize by pre-computing the inverse of radius squared
+  let invRadiusSquared = 1.0 / (radius * radius);
+  let weight = exp(-distSquared * invRadiusSquared);
 
-    // Add injection
-    // blends the new injection to any existing dye values within a clamped range
-    dye[index] = clamp(dye[index] + injectionAmount * weight, 0.0, 1.0);
-  }
+  // Add injection
+  // blends the new injection to any existing dye values within a clamped range
+  // clamped range avoids overflow
+  dye[index] = clamp(dye[index] + injectionAmount * weight, 0.0, 1.0);
 }
