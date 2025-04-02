@@ -6,7 +6,8 @@ function createVelBindGroup(device: GPUDevice, velPipeline: GPURenderPipeline, b
       { binding: 1, resource: { buffer: buffers.mouseBuf } },
       { binding: 2, resource: { buffer: buffers.gridSizeBuf } },
       { binding: 3, resource: { buffer: buffers.radiusBuf } },
-      { binding: 4, resource: { buffer: buffers.strengthBuf } }
+      { binding: 4, resource: { buffer: buffers.strengthBuf } },
+      { binding: 5, resource: { buffer: buffers.deltaTimeBuf } }
     ]
   });
 }
@@ -64,7 +65,8 @@ function createPressureBindGroup(device: GPUDevice, pressurePipeline: GPURenderP
     entries: [
       { binding: 0, resource: { buffer: buffers.divBuf } },
       { binding: 1, resource: { buffer: buffers.pressureBuf } },
-      { binding: 2, resource: { buffer: buffers.gridSizeBuf } }
+      { binding: 2, resource: { buffer: buffers.gridSizeBuf } },
+      { binding: 3, resource: { buffer: buffers.pressureOutBuf } }
     ]
   });
 }
@@ -97,9 +99,8 @@ function createVoticityBindGroup(device: GPUDevice, vorticityPipeline: GPURender
     layout: vorticityPipeline.getBindGroupLayout(0),
     entries: [
       {binding: 0, resource: { buffer: buffers.velBuf } },
-      {binding: 1, resource: { buffer: buffers.vorticityForceBuf } },
-      {binding: 2, resource: { buffer: buffers.gridSizeBuf } },
-      {binding: 3, resource: { buffer: buffers.vorticityStrengthBuf } }
+      {binding: 1, resource: { buffer: buffers.gridSizeBuf } },
+      {binding: 2, resource: { buffer: buffers.vorticityBuf } }
     ]
   });
 }
@@ -109,9 +110,10 @@ function createAddVoticityBindGroup(device: GPUDevice, addVorticityPipeline: GPU
     layout: addVorticityPipeline.getBindGroupLayout(0),
     entries: [
       {binding: 0, resource: { buffer: buffers.velBuf } },
-      {binding: 1, resource: { buffer: buffers.vorticityForceBuf } },
+      {binding: 1, resource: { buffer: buffers.vorticityBuf } },
       {binding: 2, resource: { buffer: buffers.gridSizeBuf } },
-      {binding: 3, resource: { buffer: buffers.vorticityScaleBuf } }
+      {binding: 3, resource: { buffer: buffers.vorticityStrengthBuf } },
+      {binding: 4, resource: { buffer: buffers.deltaTimeBuf } }
     ]
   });
 }

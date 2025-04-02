@@ -45,14 +45,14 @@ function createStrengthBuf(device: GPUDevice) {
 
 function createDyeFieldBuf(device: GPUDevice, gridSize: number) {
   return device.createBuffer({
-    size: gridSize * gridSize * Float32Array.BYTES_PER_ELEMENT,
+    size: gridSize * gridSize * 3 * Float32Array.BYTES_PER_ELEMENT,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
   });
 }
 
 function createDyeFieldOutBuf(device: GPUDevice, gridSize: number) {
   return device.createBuffer({
-    size: gridSize * gridSize * Float32Array.BYTES_PER_ELEMENT,
+    size: gridSize * gridSize * 3 * Float32Array.BYTES_PER_ELEMENT,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
   });
 }
@@ -80,7 +80,7 @@ function createInjectionAmtBuf(device: GPUDevice) {
 
 function createCanvasSizeBuf(device: GPUDevice) {
   return device.createBuffer({
-    size: 2 * Float32Array.BYTES_PER_ELEMENT,
+    size: 4 * Float32Array.BYTES_PER_ELEMENT,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
   });
 }
@@ -93,6 +93,20 @@ function createDivBuf(device: GPUDevice, gridSize: number) {
 }
 
 function createPressureBuf(device: GPUDevice, gridSize: number) {
+  return device.createBuffer({
+    size: gridSize * gridSize * Float32Array.BYTES_PER_ELEMENT,
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
+  });
+}
+
+function createPressureOutBuf(device: GPUDevice, gridSize: number) {
+  return device.createBuffer({
+    size: gridSize * gridSize * Float32Array.BYTES_PER_ELEMENT,
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
+  });
+}
+
+function createVorticityBuf(device: GPUDevice, gridSize: number) {
   return device.createBuffer({
     size: gridSize * gridSize * Float32Array.BYTES_PER_ELEMENT,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
@@ -135,26 +149,28 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const canvasSizeBuf = createCanvasSizeBuf(device);
   const divBuf = createDivBuf(device, gridSize);
   const pressureBuf = createPressureBuf(device, gridSize);
+  const pressureOutBuf = createPressureOutBuf(device, gridSize);
+  const vorticityBuf = createVorticityBuf(device, gridSize);
   const vorticityForceBuf = createVorticityForceBuf(device, gridSize);
   const vorticityStrengthBuf = createVorticityStrengthBuf(device);
   const vorticityScaleBuf = createAddVorticityScaleBuf(device);
 
   // Write initial values
-  const injectionAmtData = new Float32Array([0.5, 0.0, 0.0 , 0.0]);
+  const injectionAmtData = new Float32Array([0.5, 0.5, 0.5 , 0.0]);
   device.queue.writeBuffer(injectionAmtBuf, 0, injectionAmtData);
 
   const dx = 1.0 / gridSize;
   const rdx = 1.0 / dx;
   const gridSizeData = new Float32Array([gridSize, gridSize, dx, rdx]);
   // TODO: adjust these parameters to see velocity injection more/less easily
-  const radiusData   = new Float32Array([2.0, 0.0, 0.0, 0.0]); // f32 aligned
+  const radiusData   = new Float32Array([0.5, 0.0, 0.0, 0.0]); // f32 aligned
   const strengthData = new Float32Array([1.0, 0.0, 0.0, 0.0]); // f32 aligned
 
   device.queue.writeBuffer(gridSizeBuf, 0, gridSizeData);
   device.queue.writeBuffer(radiusBuf, 0, radiusData);
   device.queue.writeBuffer(strengthBuf, 0, strengthData);
 
-  const decayData = new Float32Array([0.98, 0.0, 0.0, 0.0]); // f32 aligned
+  const decayData = new Float32Array([0.99, 0.0, 0.0, 0.0]); // f32 aligned
   device.queue.writeBuffer(decayBuf, 0, decayData);
 
   const canvasSizeData = new Float32Array([canvas.width, canvas.height]);
@@ -181,6 +197,8 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
     canvasSizeBuf,
     divBuf,
     pressureBuf,
+    pressureOutBuf,
+    vorticityBuf,
     vorticityForceBuf,
     vorticityStrengthBuf,
     vorticityScaleBuf
