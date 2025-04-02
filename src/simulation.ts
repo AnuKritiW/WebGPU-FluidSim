@@ -9,25 +9,30 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
       runInjectionComputePass();
     }
 
-    runComputePass();
-    runAdvectionComputePass();
-    updateDyeField();
-    runDecayComputePass();
-    resetDivergenceBuffer();
-    runDivergenceComputePass()
-    for (let i = 0; i < 60; i++) {  // 20 iterations (tune this value)
-      runPressureComputePass();  // dispatch pressure.wgsl
-    }
-    runSubPressureComputePass();  // dispatch subtractPressure.wgsl
-    runVelocityAdvectionPass();
-    updateVelocityField();
+    runVelComputePass();
+
     runVorticityComputePass();
     runAddVorticityComputePass();
+
+    runVelocityAdvectionPass();
+    updateVelocityField();
+
+    runAdvectionComputePass();
+    updateDyeField();
+
+    runDecayComputePass();
+
+    resetDivergenceBuffer();
+    runDivergenceComputePass()
+    for (let i = 0; i < 30; i++) {  // 20 iterations (tune this value)
+      runPressureComputePass();  // dispatch pressure.wgsl
+      updatePressureField();
+    }
+    runSubPressureComputePass();  // dispatch subtractPressure.wgsl
 
     // await readDivergenceBuffer(device, buffers.divBuf);
 
     render(device, context, pipelines.renderPipeline, getRenderBindGroup());
-
     requestAnimationFrame(simulationLoop);
   }
 
@@ -47,7 +52,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     device.queue.submit([commandEncoder.finish()]);
   }
   
-  function runComputePass() {
+  function runVelComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
     passEncoder.setPipeline(pipelines.velPipeline);
@@ -69,9 +74,9 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     //   console.warn("Delta time is very low:", deltaTime);
     // }
 
-    // if (deltaTime > (1.0 / 60.0)) {
-    //   deltaTime = (1.0 / 60.0);
-    // }
+    if (deltaTime > (1.0 / 60.0)) {
+      deltaTime = (1.0 / 60.0);
+    }
 
     const deltaTimeData = new Float32Array([deltaTime]);
     device.queue.writeBuffer(buffers.deltaTimeBuf, 0, deltaTimeData);
@@ -194,6 +199,18 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     );
     device.queue.submit([commandEncoder.finish()]);
   }
+
+  function updatePressureField() {
+    const commandEncoder = device.createCommandEncoder();
+    commandEncoder.copyBufferToBuffer(
+      buffers.pressureOutBuf,
+      0,
+      buffers.pressureBuf,
+      0,
+      buffers.pressureBuf.size
+    );
+    device.queue.submit([commandEncoder.finish()]);
+  }
   
   // Assemble the render bind group based on current state.
   function getRenderBindGroup() {
@@ -202,7 +219,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
       entries: [
         { binding: 0, resource: { buffer: buffers.gridSizeBuf } },
         { binding: 1, resource: { buffer: buffers.canvasSizeBuf } },
-        { binding: 2, resource: { buffer: buffers.dyeFieldBuf } }
+        { binding: 2, resource: { buffer: buffers.dyeFieldBuf } },
       ]
     });
   }
