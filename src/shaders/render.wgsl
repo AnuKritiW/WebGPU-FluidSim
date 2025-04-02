@@ -49,5 +49,11 @@ fn fs_main(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f32> {
   let gridPos = uv * gridSize;
 
   let dyeVal = sampleDye(gridPos);
-  return vec4<f32>(dyeVal, dyeVal, dyeVal, 1.0);
+  // return vec4<f32>(dyeVal, dyeVal, dyeVal, 1.0);
+
+  let brightness = pow(dyeVal, 0.5);          // soft contrast
+  let alpha = clamp(dyeVal * 2.0, 0.0, 1.0);  // opacity ramp
+  let color = vec3<f32>(brightness);         // grayscale smoke look
+
+  return vec4<f32>(color, alpha);
 }
