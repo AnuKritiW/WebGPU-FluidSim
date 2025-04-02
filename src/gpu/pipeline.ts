@@ -21,7 +21,7 @@ function createRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
   });
 }
 
-function createComputePipeline(device: GPUDevice) {
+function createVelComputePipeline(device: GPUDevice) {
   // Create Compute Pipeline for `updateVelocity.wgsl`
   const velShaderModule = device.createShaderModule({ code: updateVelocityShaderCode });
 
@@ -114,7 +114,7 @@ function createAddVorticityComputePipeline(device: GPUDevice) {
 
 export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const renderPipeline = createRenderPipeline(device, format);
-  const velPipeline = createComputePipeline(device);
+  const velPipeline = createVelComputePipeline(device);
   const advectionPipeline = createAdvectionComputePipeline(device);
   const decayPipeline = createDecayComputePipeline(device);
   const injectionPipeline = createInjectionComputePipeline(device);
