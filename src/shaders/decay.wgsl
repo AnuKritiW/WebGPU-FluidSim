@@ -17,5 +17,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   // Compute the 1D index for buffers
   let index = u32(pos.x + pos.y * uGridSize.x);
 
-  dye[index] = dye[index] * decayRate;
+  let decayedDye = dye[index] * decayRate;
+  dye[index] = select(decayedDye, 0.0, decayedDye < 0.01);
 }
