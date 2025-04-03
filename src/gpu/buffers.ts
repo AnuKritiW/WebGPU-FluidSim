@@ -71,6 +71,13 @@ function createDecayBuf(device: GPUDevice) {
   });
 }
 
+function createVelDecayBuf(device: GPUDevice) {
+  return device.createBuffer({
+    size: 4 * Float32Array.BYTES_PER_ELEMENT, // f32 padded to vec4<f32>
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+  });
+}
+
 function createInjectionAmtBuf(device: GPUDevice) {
   return device.createBuffer({
     size: 4 * Float32Array.BYTES_PER_ELEMENT, // f32 padded to vec4<32>
@@ -134,6 +141,13 @@ function createAddVorticityScaleBuf(device: GPUDevice) {
   });
 }
 
+function createViscosityBuf(device: GPUDevice) {
+  return device.createBuffer({
+    size: 4 * Float32Array.BYTES_PER_ELEMENT, // f32 padded to vec4<f32>
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+  });
+}
+
 export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const mouseBuf = createMouseBuf(device);
   const velBuf      = createVelBuf(device, gridSize);
@@ -146,6 +160,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const deltaTimeBuf = createDeltaTimeBuf(device);
   const injectionAmtBuf = createInjectionAmtBuf(device);
   const decayBuf = createDecayBuf(device);
+  const velDecayBuf = createVelDecayBuf(device);
   const canvasSizeBuf = createCanvasSizeBuf(device);
   const divBuf = createDivBuf(device, gridSize);
   const pressureBuf = createPressureBuf(device, gridSize);
@@ -154,9 +169,10 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const vorticityForceBuf = createVorticityForceBuf(device, gridSize);
   const vorticityStrengthBuf = createVorticityStrengthBuf(device);
   const vorticityScaleBuf = createAddVorticityScaleBuf(device);
+  const viscosityBuf = createViscosityBuf(device);
 
   // Write initial values
-  const injectionAmtData = new Float32Array([0.5, 0.5, 0.5 , 0.0]);
+  const injectionAmtData = new Float32Array([10.5, 0.5, 0.5 , 0.0]);
   device.queue.writeBuffer(injectionAmtBuf, 0, injectionAmtData);
 
   const dx = 1.0 / gridSize;
@@ -164,7 +180,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const gridSizeData = new Float32Array([gridSize, gridSize, dx, rdx]);
   // TODO: adjust these parameters to see velocity injection more/less easily
   const radiusData   = new Float32Array([0.5, 0.0, 0.0, 0.0]); // f32 aligned
-  const strengthData = new Float32Array([1.0, 0.0, 0.0, 0.0]); // f32 aligned
+  const strengthData = new Float32Array([2.0, 0.0, 0.0, 0.0]); // f32 aligned
 
   device.queue.writeBuffer(gridSizeBuf, 0, gridSizeData);
   device.queue.writeBuffer(radiusBuf, 0, radiusData);
@@ -173,14 +189,20 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const decayData = new Float32Array([0.99, 0.0, 0.0, 0.0]); // f32 aligned
   device.queue.writeBuffer(decayBuf, 0, decayData);
 
+  const velDecayData = new Float32Array([0.99, 0.0, 0.0, 0.0]); // f32 aligned
+  device.queue.writeBuffer(velDecayBuf, 0, velDecayData);
+
   const canvasSizeData = new Float32Array([canvas.width, canvas.height]);
   device.queue.writeBuffer(canvasSizeBuf, 0, canvasSizeData);
 
   const vorticityStrengthData = new Float32Array([0.5, 0.0, 0.0, 0.0]);
   device.queue.writeBuffer(vorticityStrengthBuf, 0, vorticityStrengthData);
 
-  const vorticityScaleData = new Float32Array([1.0, 0.0, 0.0, 0.0]);
+  const vorticityScaleData = new Float32Array([0.5, 0.0, 0.0, 0.0]);
   device.queue.writeBuffer(vorticityScaleBuf, 0, vorticityScaleData);
+
+  const viscosityData = new Float32Array([0.8, 0.0, 0.0, 0.0]);
+  device.queue.writeBuffer(viscosityBuf, 0, viscosityData);
 
   return {
     mouseBuf,
@@ -194,6 +216,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
     deltaTimeBuf,
     injectionAmtBuf,
     decayBuf,
+    velDecayBuf,
     canvasSizeBuf,
     divBuf,
     pressureBuf,
@@ -201,6 +224,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
     vorticityBuf,
     vorticityForceBuf,
     vorticityStrengthBuf,
-    vorticityScaleBuf
+    vorticityScaleBuf,
+    viscosityBuf
   };
 }

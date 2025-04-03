@@ -9,10 +9,12 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
       runInjectionComputePass();
     }
 
+    // console.log("🖱️ Velocity:", mouseHandler.vel[0], mouseHandler.vel[1]);
+
     runVelComputePass();
 
-    runVorticityComputePass();
-    runAddVorticityComputePass();
+    // runVorticityComputePass();
+    // runAddVorticityComputePass();
 
     runVelocityAdvectionPass();
     updateVelocityField();
@@ -21,6 +23,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     updateDyeField();
 
     runDecayComputePass();
+    runVelDecayComputePass();
 
     resetDivergenceBuffer();
     runDivergenceComputePass()
@@ -28,7 +31,12 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
       runPressureComputePass();  // dispatch pressure.wgsl
       updatePressureField();
     }
+
     runSubPressureComputePass();  // dispatch subtractPressure.wgsl
+    updatePressureField();
+
+    // runClearPressureComputePass();
+    // updatePressureField();
 
     // await readDivergenceBuffer(device, buffers.divBuf);
 
@@ -103,6 +111,16 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     device.queue.submit([commandEncoder.finish()]);
   }
 
+  function runVelDecayComputePass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(pipelines.velDecayPipeline);
+    passEncoder.setBindGroup(0, bindGroups.velDecayBindGroup);
+    passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  }
+
   function resetDivergenceBuffer() {
     const zeroData = new Float32Array(gridSize * gridSize).fill(0);
     device.queue.writeBuffer(buffers.divBuf, 0, zeroData);
@@ -136,6 +154,16 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     const passEncoder = commandEncoder.beginComputePass();
     passEncoder.setPipeline(pipelines.subPressurePipeline);
     passEncoder.setBindGroup(0, bindGroups.subPressureBindGroup);
+    passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  }
+
+  function runClearPressureComputePass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(pipelines.clearPressurePipeline);
+    passEncoder.setBindGroup(0, bindGroups.clearPressureBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
