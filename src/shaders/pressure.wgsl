@@ -26,9 +26,11 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   
   // Average the neighboring pressures and add the local divergence.
   // In a typical Jacobi iteration for the Poisson equation,
-  let alpha: f32 = 0.3; // relaxation factor
-  var newPressure = alpha * (divergence[index] + pressureLeft + pressureRight + pressureTop + pressureBottom) / 4.0 +
-                   (1.0 - alpha) * pressure[index];
+  // pressure_new = (divergence + (pressure_left + pressure_right + pressure_top + pressure_bottom)) / 4.0
+  let alpha: f32 = -(uGridSize.z * uGridSize.z); //0.3; // relaxation factor
+  let recipBeta = 0.25; // divide by 4
+  var newPressure = (alpha * divergence[index] + pressureLeft + pressureRight + pressureTop + pressureBottom) * recipBeta;
+//                   (1.0 - alpha) * pressure[index];
 
   pressureOut[index] = newPressure;
 }
