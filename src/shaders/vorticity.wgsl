@@ -16,18 +16,20 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
   // Compute the 1D index for buffers
   let index: u32 = x + y * gridWidth;
+
+  let leftIdx = (x - 1u) + y * gridWidth;
+  let rightIdx = (x + 1u) + y * gridWidth;
+  let bottomIdx = x + (y - 1u) * gridWidth;
+  let topIdx = x + (y + 1u) * gridWidth;
+
+  let leftVel = velocity[leftIdx].y;
+  let rightVel = velocity[rightIdx].y;
+  let bottomVel = velocity[bottomIdx].x;
+  let topVel = velocity[topIdx].x;
   
   // Approximate curl (only z-component in 2D: curl = ∂v/∂x - ∂u/∂y)
-  let left = select(velocity[index].y, velocity[index - 1u].y, (x > 0u));
-  let right = select(velocity[index].y, velocity[index + 1u].y, (x < gridWidth - 1u));
-  let top = select(velocity[index].x, velocity[index - gridWidth].x, (y > 0u));
-  let bottom = select(velocity[index].x, velocity[index + gridWidth].x, (y < u32(uGridSize.y) - 1u));
-  
-  let curl = right - left - (bottom - top);
+  let curl = ((rightVel - leftVel) - (topVel - bottomVel));
   
   // Compute a confinement force that is proportional to the curl.
-  // TODO: compute grad of curl magnitude?
-  // let force = vec2<f32>(-curl, curl) * vorticityStrength;
-  // vorticityForce[index] = force;
-  vorticity[index] = curl;
+  vorticity[index] = 0.5 * uGridSize.w * curl;
 }

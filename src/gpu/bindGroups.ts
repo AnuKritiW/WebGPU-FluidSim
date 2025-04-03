@@ -124,7 +124,8 @@ function createAddVoticityBindGroup(device: GPUDevice, addVorticityPipeline: GPU
       {binding: 1, resource: { buffer: buffers.vorticityBuf } },
       {binding: 2, resource: { buffer: buffers.gridSizeBuf } },
       {binding: 3, resource: { buffer: buffers.vorticityStrengthBuf } },
-      {binding: 4, resource: { buffer: buffers.deltaTimeBuf } }
+      {binding: 4, resource: { buffer: buffers.deltaTimeBuf } },
+      {binding: 5, resource: { buffer: buffers.velOutBuf } }
     ]
   });
 }

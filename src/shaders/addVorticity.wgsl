@@ -1,8 +1,9 @@
-@group(0) @binding(0) var<storage, read_write> velocity: array<vec2<f32>>;
+@group(0) @binding(0) var<storage, read> velocity: array<vec2<f32>>;
 @group(0) @binding(1) var<storage, read> vorticity: array<f32>;
 @group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;
 @group(0) @binding(3) var<uniform> uVorticityStrength: f32;
 @group(0) @binding(4) var<uniform> uDeltaTime: f32;
+@group(0) @binding(5) var<storage, read_write> velOut: array<vec2<f32>>;
 
 @compute @workgroup_size(8,8)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
@@ -31,13 +32,13 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
   // Normalize gradient
   let epsilon = 1e-5;
-  let gradMag = max(epsilon, length(grad));
-  let N = grad / gradMag;
+  let gradMag = max(epsilon, dot(grad, grad));
+  var N = grad / gradMag;
 
   // compute confinement force
   let curl = vorticity[index];
-  let force = vec2<f32>(N.y, -N.x) * curl * uVorticityStrength * uGridSize.z * uDeltaTime;
+  N *= uGridSize.z * uVorticityStrength * uDeltaTime * curl * vec2(1, -1);
 
   // Add the force to the velocity field
-  velocity[index] += force;
+  velOut[index] = velocity[index] + N;
 }

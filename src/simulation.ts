@@ -13,8 +13,9 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 
     runVelComputePass();
 
-    // runVorticityComputePass();
-    // runAddVorticityComputePass();
+    runVorticityComputePass();
+    runAddVorticityComputePass();
+    updateVelocityField();
 
     runVelocityAdvectionPass();
     updateVelocityField();

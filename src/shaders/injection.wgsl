@@ -43,7 +43,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let mouseVel = uMouse.zw;
 
   // Define injection radius in grid units – within which injection occurs.
-  let radius = 0.0005;
+  let radius = 0.00025;
 
   // Gaussian weight for smoother injection
   let weight = gaussianWeight(pos, mousePos, mouseVel, radius);
