@@ -35,12 +35,15 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let distSquared = dot(adjDiff, adjDiff);
 
   // Define injection radius in grid units – within which injection occurs.
-  let radius = 2.5;
+  let radius = 10.0;
+
+  let mouseVel = uMouse.zw * 10.0; // TODO: change 10.0 to uStrength
+  let directionality = length(mouseVel);
 
   // Gaussian weight for smoother injection --> weight = exp(-distSquared / (radius * radius));
   // optimize by pre-computing the inverse of radius squared
   let invRadiusSquared = 1.0 / (radius * radius);
-  let weight = exp(-distSquared * invRadiusSquared);
+  let weight = exp(-distSquared * invRadiusSquared) * directionality;
 
   // Add injection
   // blends the new injection to any existing dye values within a clamped range
