@@ -4,6 +4,20 @@
 @group(0) @binding(2) var<uniform> injectionAmount: f32;
 @group(0) @binding(3) var<uniform> uGridSize: vec4<f32>; // (gridWidth, gridHeight, dx, rdx)
 
+
+// Gaussian function for splatting dye influence
+fn gaussianWeight(pos: vec2<f32>, center: vec2<f32>, vel: vec2<f32>, rad: f32) -> f32 {
+  var diff = pos - center;
+  diff.x *= uGridSize.x / uGridSize.y; // aspect correction
+  var v = vel;
+  v.x *= uGridSize.x / uGridSize.y; // aspect correction for direction
+  // divide by radius if you want a sharper falloff (as opposed to radius^2)
+  let distSq = dot(diff, diff);
+  // optimize by pre-computing the inverse of radius squared
+  let invRad = 1.0 / rad;
+  return exp(-distSq * invRad) * length(v);
+}
+
 @compute @workgroup_size(8,8)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
@@ -22,28 +36,17 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let index = x + y * u32(uGridSize.x);
 
   // get grid cell position from the workgroup index
-  let pos = vec2<f32>(f32(x), f32(y));
+  let pos = vec2<f32>(f32(x), f32(y)) / uGridSize.xy;
 
   // Distance from cell to the injection position
-  let injectionPosGrid = uMouse.xy * uGridSize.xy; // convert mouse position to grid space coordinates
-  // let injectionPosGrid = vec2<f32>(uGridSize.x * 0.5, uGridSize.y * 0.5); // debug: center of the grid
-
-  // since (canvas size) != (grid size), compute aspect-corrected offset to ensure splat is not distorted
-  let diff = pos - injectionPosGrid;
-  let aspect = uGridSize.x / uGridSize.y;
-  let adjDiff = vec2<f32>(diff.x * aspect, diff.y);
-  let distSquared = dot(adjDiff, adjDiff);
+  let mousePos = uMouse.xy;
+  let mouseVel = uMouse.zw;
 
   // Define injection radius in grid units – within which injection occurs.
-  let radius = 10.0;
+  let radius = 0.0005;
 
-  let mouseVel = uMouse.zw * 10.0; // TODO: change 10.0 to uStrength
-  let directionality = length(mouseVel);
-
-  // Gaussian weight for smoother injection --> weight = exp(-distSquared / (radius * radius));
-  // optimize by pre-computing the inverse of radius squared
-  let invRadiusSquared = 1.0 / (radius * radius);
-  let weight = exp(-distSquared * invRadiusSquared) * directionality;
+  // Gaussian weight for smoother injection
+  let weight = gaussianWeight(pos, mousePos, mouseVel, radius);
 
   // Add injection
   // blends the new injection to any existing dye values within a clamped range

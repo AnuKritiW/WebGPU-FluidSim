@@ -35,8 +35,8 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     runSubPressureComputePass();  // dispatch subtractPressure.wgsl
     updatePressureField();
 
-    // runClearPressureComputePass();
-    // updatePressureField();
+    runClearPressureComputePass();
+    updatePressureField();
 
     // await readDivergenceBuffer(device, buffers.divBuf);
 

@@ -25,8 +25,8 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
   // Compute the gradient via finite differences.
   let grad: vec2<f32> = vec2<f32>(
-    (pressureRight - pressureLeft) * 0.5,
-    (pressureBottom - pressureTop) * 0.5
+    (pressureRight - pressureLeft) * 0.5 * uGridSize.w,
+    (pressureBottom - pressureTop) * 0.5 * uGridSize.w
   );
   
   // Subtract the gradient from the velocity field.
