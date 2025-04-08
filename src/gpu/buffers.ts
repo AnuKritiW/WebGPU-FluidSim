@@ -148,7 +148,7 @@ function createDiffusionBuf(device: GPUDevice) {
   });
 }
 
-export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
+export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLCanvasElement) {
   const mouseBuf = createMouseBuf(device);
   const velBuf      = createVelBuf(device, gridSize);
   const velOutBuf = createVelOutBuf(device, gridSize);

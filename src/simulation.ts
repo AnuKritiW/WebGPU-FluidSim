@@ -1,6 +1,41 @@
 import { render } from './renderer';
+import { MouseHandler } from './input';
 
-export function startSimulation({ device, context, buffers, bindGroups, pipelines, mouseHandler, gridSize }) {
+interface PipelineMap {
+  renderPipeline: GPURenderPipeline,
+  injectionPipeline: GPUComputePipeline,
+  velPipeline: GPUComputePipeline,
+  advectionPipeline: GPUComputePipeline,
+  decayPipeline: GPUComputePipeline,
+  velDecayPipeline: GPUComputePipeline,
+  divPipeline: GPUComputePipeline,
+  pressurePipeline: GPUComputePipeline,
+  subPressurePipeline: GPUComputePipeline,
+  clearPressurePipeline: GPUComputePipeline,
+  advectVelPipeline: GPUComputePipeline,
+  vorticityPipeline: GPUComputePipeline,
+  addVorticityPipeline: GPUComputePipeline
+}
+
+export interface BufferMap {
+  [key: string]: GPUBuffer;
+}
+
+export interface BindGroupMap {
+  [key: string]: GPUBindGroup;
+}
+
+export function startSimulation({ device, context, buffers, bindGroups, pipelines, mouseHandler, gridSize }:
+{
+  device: GPUDevice,
+  context: GPUCanvasContext,
+  buffers: BufferMap,
+  bindGroups: BindGroupMap,
+  pipelines: PipelineMap,
+  mouseHandler: MouseHandler,
+  gridSize: number
+}
+) {
   async function simulationLoop() {
     updateDeltaTime(device, buffers);
 
@@ -76,7 +111,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 
   let lastFrameTime = performance.now();
 
-  function updateDeltaTime(device, buffers) {
+  function updateDeltaTime(device: GPUDevice, buffers: BufferMap) {
     const currentTime = performance.now();
     let deltaTime = (currentTime - lastFrameTime) / 1000.0; // Convert ms → seconds
     lastFrameTime = currentTime;
@@ -258,25 +293,25 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     });
   }
 
-  async function readDivergenceBuffer(device, divergenceBuffer) {
-    const readBuffer = device.createBuffer({
-      size: divergenceBuffer.size,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ, // Readable on CPU
-    });
+  // async function readDivergenceBuffer(device, divergenceBuffer) {
+  //   const readBuffer = device.createBuffer({
+  //     size: divergenceBuffer.size,
+  //     usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ, // Readable on CPU
+  //   });
 
-    // Create command encoder
-    const commandEncoder = device.createCommandEncoder();
-    commandEncoder.copyBufferToBuffer(divergenceBuffer, 0, readBuffer, 0, divergenceBuffer.size);
-    device.queue.submit([commandEncoder.finish()]);
+  //   // Create command encoder
+  //   const commandEncoder = device.createCommandEncoder();
+  //   commandEncoder.copyBufferToBuffer(divergenceBuffer, 0, readBuffer, 0, divergenceBuffer.size);
+  //   device.queue.submit([commandEncoder.finish()]);
 
-    // Wait for GPU to complete work
-    await readBuffer.mapAsync(GPUMapMode.READ);
-    const arrayBuffer = readBuffer.getMappedRange();
-    const divergenceValues = new Float32Array(arrayBuffer);
+  //   // Wait for GPU to complete work
+  //   await readBuffer.mapAsync(GPUMapMode.READ);
+  //   const arrayBuffer = readBuffer.getMappedRange();
+  //   const divergenceValues = new Float32Array(arrayBuffer);
 
-    console.log("Divergence Buffer Values:", divergenceValues);
-    readBuffer.unmap();
-  }
+  //   console.log("Divergence Buffer Values:", divergenceValues);
+  //   readBuffer.unmap();
+  // }
   
   simulationLoop();
 }

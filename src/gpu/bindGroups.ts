@@ -42,7 +42,7 @@ function createInjectionBindGroup(device: GPUDevice, injectionPipeline: GPURende
   });
 }
 
-function createDecayBindGroup(device: GPUDevice, decayPipeline: GPURenderPipeline, buffers) {
+function createDecayBindGroup(device: GPUDevice, decayPipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: decayPipeline.getBindGroupLayout(0),
     entries: [
@@ -53,7 +53,7 @@ function createDecayBindGroup(device: GPUDevice, decayPipeline: GPURenderPipelin
   });
 }
 
-function createVelDecayBindGroup(device: GPUDevice, velDecayPipeline: GPURenderPipeline, buffers) {
+function createVelDecayBindGroup(device: GPUDevice, velDecayPipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: velDecayPipeline.getBindGroupLayout(0),
     entries: [
@@ -64,7 +64,7 @@ function createVelDecayBindGroup(device: GPUDevice, velDecayPipeline: GPURenderP
   });
 }
 
-function createDivBindGroup(device: GPUDevice, divPipeline: GPURenderPipeline, buffers) {
+function createDivBindGroup(device: GPUDevice, divPipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: divPipeline.getBindGroupLayout(0),
     entries: [
@@ -75,7 +75,7 @@ function createDivBindGroup(device: GPUDevice, divPipeline: GPURenderPipeline, b
   });
 }
 
-function createPressureBindGroup(device: GPUDevice, pressurePipeline: GPURenderPipeline, buffers) {
+function createPressureBindGroup(device: GPUDevice, pressurePipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: pressurePipeline.getBindGroupLayout(0),
     entries: [
@@ -87,7 +87,7 @@ function createPressureBindGroup(device: GPUDevice, pressurePipeline: GPURenderP
   });
 }
 
-function createSubPressureBindGroup(device: GPUDevice, subPressurePipeline: GPURenderPipeline, buffers) {
+function createSubPressureBindGroup(device: GPUDevice, subPressurePipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: subPressurePipeline.getBindGroupLayout(0),
     entries: [
@@ -98,7 +98,7 @@ function createSubPressureBindGroup(device: GPUDevice, subPressurePipeline: GPUR
   });
 }
 
-function createAdvectVelBindGroup(device: GPUDevice, advectVelPipeline: GPURenderPipeline, buffers) {
+function createAdvectVelBindGroup(device: GPUDevice, advectVelPipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: advectVelPipeline.getBindGroupLayout(0),
     entries: [
@@ -110,7 +110,7 @@ function createAdvectVelBindGroup(device: GPUDevice, advectVelPipeline: GPURende
   });
 }
 
-function createVoticityBindGroup(device: GPUDevice, vorticityPipeline: GPURenderPipeline, buffers) {
+function createVoticityBindGroup(device: GPUDevice, vorticityPipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: vorticityPipeline.getBindGroupLayout(0),
     entries: [
@@ -121,7 +121,7 @@ function createVoticityBindGroup(device: GPUDevice, vorticityPipeline: GPURender
   });
 }
 
-function createAddVoticityBindGroup(device: GPUDevice, addVorticityPipeline: GPURenderPipeline, buffers) {
+function createAddVoticityBindGroup(device: GPUDevice, addVorticityPipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: addVorticityPipeline.getBindGroupLayout(0),
     entries: [
@@ -136,7 +136,7 @@ function createAddVoticityBindGroup(device: GPUDevice, addVorticityPipeline: GPU
 }
 
 
-function createClearPressureBindGroup(device: GPUDevice, clearPressurePipeline: GPURenderPipeline, buffers) {
+function createClearPressureBindGroup(device: GPUDevice, clearPressurePipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: clearPressurePipeline.getBindGroupLayout(0),
     entries: [
