@@ -36,7 +36,8 @@ function createInjectionBindGroup(device: GPUDevice, injectionPipeline: GPURende
       { binding: 2, resource: { buffer: buffers.injectionAmtBuf } },
       { binding: 3, resource: { buffer: buffers.gridSizeBuf } },
       { binding: 4, resource: { buffer: buffers.deltaTimeBuf } },
-      { binding: 5, resource: { buffer: buffers.diffusionBuf } }
+      { binding: 5, resource: { buffer: buffers.diffusionBuf } },
+      { binding: 6, resource: { buffer: buffers.dyeFieldOutBuf } }
     ]
   });
 }

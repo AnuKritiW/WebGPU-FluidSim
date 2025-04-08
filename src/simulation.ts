@@ -7,6 +7,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     // If the mouse is down, run injection pass.
     if (mouseHandler.isMouseDown) {
       runInjectionComputePass();
+      updateDyeField();
     }
 
     // console.log("🖱️ Velocity:", mouseHandler.vel[0], mouseHandler.vel[1]);
