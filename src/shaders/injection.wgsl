@@ -46,7 +46,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let mouseVel = uMouse.zw;
 
   // Define injection radius in grid units – within which injection occurs.
-  let radius = 0.0005;
+  let radius = 0.00025;
 
   // Gaussian weight for smoother injection
   let weight = gaussianWeight(pos, mousePos, mouseVel, radius);
@@ -54,5 +54,5 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   // Add injection
   // blends the new injection to any existing dye values within a clamped range
   // clamped range avoids overflow
-  dyeOut[index] = clamp(dye[index] * uDiffusion + injectionAmount * weight * uDeltaTime * 1000.0, 0.0, 1.0);
+  dyeOut[index] = clamp(dye[index] * uDiffusion + injectionAmount * weight * uDeltaTime * 500.0, 0.0, 1.0);
 }
