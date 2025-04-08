@@ -5,12 +5,13 @@
 @compute @workgroup_size(8,8)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let gridWidth = u32(uGridSize.x);
+  let gridHeight: u32 = u32(uGridSize.y);
 
   let x: u32 = global_id.x;
   let y: u32 = global_id.y;
 
   // Bounds check
-  if (x >= gridWidth || y >= u32(uGridSize.y)) {
+  if (x == 0 || y == 0 || x >= gridWidth || y >= gridHeight) {
     return;
   }
 

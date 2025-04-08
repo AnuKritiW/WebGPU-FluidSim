@@ -12,32 +12,32 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let y = global_id.y;
   let gridWidth: u32 = u32(uGridSize.x);
   let gridHeight: u32 = u32(uGridSize.y);
-  if (x >= gridWidth || y >= gridHeight) {
+  if (x == 0 || y == 0 || x >= gridWidth || y >= gridHeight) {
     return;
   }
 
   // Compute the 1D index for buffers
   let index = x + y * gridWidth;
 
-  // Compute ∇|ω| (gradient of absolute vorticity)
-  let left    = select(vorticity[index], vorticity[index - 1u], x > 0u);
-  let right   = select(vorticity[index], vorticity[index + 1u], x < gridWidth - 1u);
-  let bottom  = select(vorticity[index], vorticity[index + gridWidth], y < gridHeight - 1u);
-  let top     = select(vorticity[index], vorticity[index - gridWidth], y > 0u);
+  // // Compute ∇|ω| (gradient of absolute vorticity)
+  let leftIdx   = select(index, index - 1u, x > 0u);
+  let rightIdx  = select(index, index + 1u, x < gridWidth - 1u);
+  let topIdx    = select(index, index - gridWidth, y > 0u);
+  let bottomIdx = select(index, index + gridWidth, y < gridHeight - 1u);
 
   let grad = 0.5 * uGridSize.w * vec2<f32>(
-    abs(right) - abs(left),
-    abs(top) - abs(bottom)
+    abs(vorticity[topIdx]) - abs(vorticity[bottomIdx]),
+    abs(vorticity[rightIdx]) - abs(vorticity[leftIdx])
   );
 
   // Normalize gradient
   let epsilon = 1e-5;
-  let gradMag = max(epsilon, dot(grad, grad));
+  let gradMag = max(epsilon, sqrt(dot(grad, grad)));
   var N = grad / gradMag;
 
   // compute confinement force
   let curl = vorticity[index];
-  N *= uGridSize.z * uVorticityStrength * uDeltaTime * curl * vec2(1, -1);
+  N *= uGridSize.z * uVorticityStrength * uDeltaTime * curl * vec2(1.0, -1.0);
 
   // Add the force to the velocity field
   velOut[index] = velocity[index] + N;

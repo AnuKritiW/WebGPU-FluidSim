@@ -13,22 +13,12 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 
     runVelComputePass();
 
-    runVorticityComputePass();
-    runAddVorticityComputePass();
-    updateVelocityField();
-
     runVelocityAdvectionPass();
     updateVelocityField();
 
-    runAdvectionComputePass();
-    updateDyeField();
-
-    runDecayComputePass();
-    runVelDecayComputePass();
-
     resetDivergenceBuffer();
     runDivergenceComputePass()
-    for (let i = 0; i < 30; i++) {  // 20 iterations (tune this value)
+    for (let i = 0; i < 10; i++) {  // 20 iterations (tune this value)
       runPressureComputePass();  // dispatch pressure.wgsl
       updatePressureField();
     }
@@ -38,6 +28,16 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 
     runClearPressureComputePass();
     updatePressureField();
+
+    runVorticityComputePass();
+    runAddVorticityComputePass();
+    updateVelocityField();
+
+    runAdvectionComputePass();
+    updateDyeField();
+
+    runDecayComputePass();
+    runVelDecayComputePass();
 
     // await readDivergenceBuffer(device, buffers.divBuf);
 

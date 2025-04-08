@@ -134,13 +134,6 @@ function createVorticityStrengthBuf(device: GPUDevice) {
   });
 }
 
-function createAddVorticityScaleBuf(device: GPUDevice) {
-  return device.createBuffer({
-    size: 4 * Float32Array.BYTES_PER_ELEMENT, // f32 padded to vec4<f32>
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-  });
-}
-
 function createViscosityBuf(device: GPUDevice) {
   return device.createBuffer({
     size: 4 * Float32Array.BYTES_PER_ELEMENT, // f32 padded to vec4<f32>
@@ -168,7 +161,6 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const vorticityBuf = createVorticityBuf(device, gridSize);
   const vorticityForceBuf = createVorticityForceBuf(device, gridSize);
   const vorticityStrengthBuf = createVorticityStrengthBuf(device);
-  const vorticityScaleBuf = createAddVorticityScaleBuf(device);
   const viscosityBuf = createViscosityBuf(device);
 
   // Write initial values
@@ -179,7 +171,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const rdx = 1.0 / dx;
   const gridSizeData = new Float32Array([gridSize, gridSize, dx, rdx]);
   // TODO: adjust these parameters to see velocity injection more/less easily
-  const radiusData   = new Float32Array([0.5, 0.0, 0.0, 0.0]); // f32 aligned
+  const radiusData   = new Float32Array([0.05, 0.0, 0.0, 0.0]); // f32 aligned
   const strengthData = new Float32Array([2.0, 0.0, 0.0, 0.0]); // f32 aligned
 
   device.queue.writeBuffer(gridSizeBuf, 0, gridSizeData);
@@ -195,11 +187,8 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const canvasSizeData = new Float32Array([canvas.width, canvas.height]);
   device.queue.writeBuffer(canvasSizeBuf, 0, canvasSizeData);
 
-  const vorticityStrengthData = new Float32Array([100000.0, 0.0, 0.0, 0.0]);
+  const vorticityStrengthData = new Float32Array([15.5, 0.0, 0.0, 0.0]);
   device.queue.writeBuffer(vorticityStrengthBuf, 0, vorticityStrengthData);
-
-  const vorticityScaleData = new Float32Array([100000.5, 0.0, 0.0, 0.0]);
-  device.queue.writeBuffer(vorticityScaleBuf, 0, vorticityScaleData);
 
   const viscosityData = new Float32Array([0.8, 0.0, 0.0, 0.0]);
   device.queue.writeBuffer(viscosityBuf, 0, viscosityData);
@@ -224,7 +213,6 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
     vorticityBuf,
     vorticityForceBuf,
     vorticityStrengthBuf,
-    vorticityScaleBuf,
     viscosityBuf
   };
 }
