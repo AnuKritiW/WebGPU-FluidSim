@@ -7,7 +7,8 @@ function createVelBindGroup(device: GPUDevice, velPipeline: GPURenderPipeline, b
       { binding: 2, resource: { buffer: buffers.gridSizeBuf } },
       { binding: 3, resource: { buffer: buffers.radiusBuf } },
       { binding: 4, resource: { buffer: buffers.strengthBuf } },
-      { binding: 5, resource: { buffer: buffers.deltaTimeBuf } }
+      { binding: 5, resource: { buffer: buffers.deltaTimeBuf } },
+      { binding: 6, resource: { buffer: buffers.velOutBuf } },
     ]
   });
 }

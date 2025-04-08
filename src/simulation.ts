@@ -12,6 +12,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     // console.log("🖱️ Velocity:", mouseHandler.vel[0], mouseHandler.vel[1]);
 
     runVelComputePass();
+    updateVelocityField();
 
     runVelocityAdvectionPass();
     updateVelocityField();
