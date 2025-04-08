@@ -39,14 +39,16 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let index = x + y * u32(uGridSize.x);
 
   // get grid cell position from the workgroup index
-  let pos = vec2<f32>(f32(x), f32(y)) / uGridSize.xy;
+  let pos = vec2<f32>(f32(x), f32(y));// / uGridSize.xy;
 
   // Distance from cell to the injection position
-  let mousePos = uMouse.xy;
-  let mouseVel = uMouse.zw;
+  // let mousePos = uMouse.xy;
+  let mousePos = uMouse.xy * vec2<f32>(uGridSize.x, uGridSize.y);
+  let mouseVel = uMouse.zw * vec2<f32>(uGridSize.x, uGridSize.y);;
 
   // Define injection radius in grid units – within which injection occurs.
-  let radius = 0.00025;
+  // let radius = 0.00025;
+  let radius = 10.0;
 
   // Gaussian weight for smoother injection
   let weight = gaussianWeight(pos, mousePos, mouseVel, radius);
