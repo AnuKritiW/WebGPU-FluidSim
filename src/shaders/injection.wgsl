@@ -3,6 +3,8 @@
 @group(0) @binding(1) var<uniform> uMouse : vec4<f32>; // (posX, posY, velX, velY)
 @group(0) @binding(2) var<uniform> injectionAmount: f32;
 @group(0) @binding(3) var<uniform> uGridSize: vec4<f32>; // (gridWidth, gridHeight, dx, rdx)
+@group(0) @binding(4) var<uniform> uDeltaTime : f32;
+@group(0) @binding(5) var<uniform> uDiffusion : f32;
 
 
 // Gaussian function for splatting dye influence
@@ -51,5 +53,5 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   // Add injection
   // blends the new injection to any existing dye values within a clamped range
   // clamped range avoids overflow
-  dye[index] = clamp(dye[index] + injectionAmount * weight, 0.0, 1.0);
+  dye[index] = clamp(dye[index] * uDiffusion + injectionAmount * weight * uDeltaTime * 1000.0, 0.0, 1.0);
 }

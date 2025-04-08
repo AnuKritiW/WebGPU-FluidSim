@@ -9,6 +9,7 @@ function createVelBindGroup(device: GPUDevice, velPipeline: GPURenderPipeline, b
       { binding: 4, resource: { buffer: buffers.strengthBuf } },
       { binding: 5, resource: { buffer: buffers.deltaTimeBuf } },
       { binding: 6, resource: { buffer: buffers.velOutBuf } },
+      { binding: 7, resource: { buffer: buffers.diffusionBuf } }
     ]
   });
 }
@@ -33,7 +34,9 @@ function createInjectionBindGroup(device: GPUDevice, injectionPipeline: GPURende
       { binding: 0, resource: { buffer: buffers.dyeFieldBuf } },
       { binding: 1, resource: { buffer: buffers.mouseBuf } },
       { binding: 2, resource: { buffer: buffers.injectionAmtBuf } },
-      { binding: 3, resource: { buffer: buffers.gridSizeBuf } }
+      { binding: 3, resource: { buffer: buffers.gridSizeBuf } },
+      { binding: 4, resource: { buffer: buffers.deltaTimeBuf } },
+      { binding: 5, resource: { buffer: buffers.diffusionBuf } }
     ]
   });
 }

@@ -141,6 +141,13 @@ function createViscosityBuf(device: GPUDevice) {
   });
 }
 
+function createDiffusionBuf(device: GPUDevice) {
+  return device.createBuffer({
+    size: 4 * Float32Array.BYTES_PER_ELEMENT, // f32 padded to vec4<f32>
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+  });
+}
+
 export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const mouseBuf = createMouseBuf(device);
   const velBuf      = createVelBuf(device, gridSize);
@@ -162,6 +169,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const vorticityForceBuf = createVorticityForceBuf(device, gridSize);
   const vorticityStrengthBuf = createVorticityStrengthBuf(device);
   const viscosityBuf = createViscosityBuf(device);
+  const diffusionBuf = createDiffusionBuf(device);
 
   // Write initial values
   const injectionAmtData = new Float32Array([10.5, 0.5, 0.5 , 0.0]);
@@ -193,6 +201,9 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
   const viscosityData = new Float32Array([0.8, 0.0, 0.0, 0.0]);
   device.queue.writeBuffer(viscosityBuf, 0, viscosityData);
 
+  const diffusionData = new Float32Array([0.99, 0.0, 0.0, 0.0]);
+  device.queue.writeBuffer(diffusionBuf, 0, diffusionData);
+
   return {
     mouseBuf,
     velBuf,
@@ -213,6 +224,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas) {
     vorticityBuf,
     vorticityForceBuf,
     vorticityStrengthBuf,
-    viscosityBuf
+    viscosityBuf,
+    diffusionBuf
   };
 }
