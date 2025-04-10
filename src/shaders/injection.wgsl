@@ -6,19 +6,17 @@
 @group(0) @binding(4) var<uniform> uDeltaTime : f32;
 @group(0) @binding(5) var<uniform> uDiffusion : f32;
 @group(0) @binding(6) var<storage, read_write> dyeOut: array<f32>;
+@group(0) @binding(7) var<uniform> uStrength : f32;
 
 
 // Gaussian function for splatting dye influence
 fn gaussianWeight(pos: vec2<f32>, center: vec2<f32>, vel: vec2<f32>, rad: f32) -> f32 {
   var diff = pos - center;
-  diff.x *= uGridSize.x / uGridSize.y; // aspect correction
-  var v = vel;
-  v.x *= uGridSize.x / uGridSize.y; // aspect correction for direction
   // divide by radius if you want a sharper falloff (as opposed to radius^2)
   let distSq = dot(diff, diff);
   // optimize by pre-computing the inverse of radius squared
   let invRad = 1.0 / rad;
-  return exp(-distSq * invRad) * length(v);
+  return exp(-distSq * invRad) * length(vel);
 }
 
 @compute @workgroup_size(8,8)
@@ -43,8 +41,8 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
   // Distance from cell to the injection position
   // let mousePos = uMouse.xy;
-  let mousePos = uMouse.xy * vec2<f32>(uGridSize.x, uGridSize.y);
-  let mouseVel = uMouse.zw * vec2<f32>(uGridSize.x, uGridSize.y);;
+  let mousePos = uMouse.xy * uGridSize.xy;
+  let mouseVel = uMouse.zw * uStrength * uGridSize.xy;
 
   // Define injection radius in grid units – within which injection occurs.
   // let radius = 0.00025;

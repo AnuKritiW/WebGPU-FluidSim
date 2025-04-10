@@ -125,7 +125,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
       deltaTime = (1.0 / 60.0);
     }
 
-    deltaTime *= 2.0;
+    // deltaTime *= 2.0;
 
     const deltaTimeData = new Float32Array([deltaTime]);
     device.queue.writeBuffer(buffers.deltaTimeBuf, 0, deltaTimeData);

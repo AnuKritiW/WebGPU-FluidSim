@@ -28,14 +28,11 @@ in the direction of the mouse movement.
 // Gaussian function for splatting velocity influence
 fn gaussianWeight(pos: vec2<f32>, center: vec2<f32>, vel: vec2<f32>, rad: f32) -> vec2<f32> {
   var diff = pos - center;
-  diff.x *= uGridSize.x / uGridSize.y; // aspect correction
-  var v = vel;
-  v.x *= uGridSize.x / uGridSize.y; // aspect correction for direction
   // divide by radius if you want a sharper falloff (as opposed to radius^2)
   let distSq = dot(diff, diff);
   let invRad = 1.0 / rad;
   let sharpness = 1.0;
-  return exp(-distSq * invRad * sharpness) * v;
+  return exp(-distSq * invRad * sharpness) * vel;
 }
 
 @compute @workgroup_size(8, 8)
@@ -53,11 +50,11 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
     // get grid cell position from the workgroup index
     // let pos = vec2<f32>(f32(x), f32(y));
-    let pos = vec2<f32>(f32(x), f32(y)) / uGridSize.xy;
+    let pos = vec2<f32>(f32(x), f32(y));// / uGridSize.xy;
 
     // let mousePosGrid = uMouse.xy * uGridSize.xy; // convert mouse position to grid space coordinates
-    let mousePos = uMouse.xy;
-    let mouseVel = uMouse.zw * uStrength; // amplify mouse velocity by strength for effect
+    let mousePos = uMouse.xy * uGridSize.xy;
+    let mouseVel = uMouse.zw * uStrength * uGridSize.xy; // amplify mouse velocity by strength for effect
 
     let influence = gaussianWeight(pos, mousePos, mouseVel, uRad);
     velOut[index] = vel[index] * uDiffusion + influence * uDeltaTime * 10.0; // amplify the effect by 100.0 to move the dye
