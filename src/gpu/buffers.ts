@@ -180,7 +180,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLC
   const gridSizeData = new Float32Array([gridSize, gridSize, dx, rdx]);
   // TODO: adjust these parameters to see velocity injection more/less easily
   // const radiusData   = new Float32Array([0.05, 0.0, 0.0, 0.0]); // f32 aligned
-  const radiusData   = new Float32Array([10.0, 0.0, 0.0, 0.0]); // f32 aligned
+  const radiusData   = new Float32Array([40.0, 0.0, 0.0, 0.0]); // f32 aligned
   const strengthData = new Float32Array([0.5, 0.0, 0.0, 0.0]); // f32 aligned
 
   device.queue.writeBuffer(gridSizeBuf, 0, gridSizeData);

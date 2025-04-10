@@ -32,5 +32,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let curl = ((rightVel - leftVel) - (topVel - bottomVel));
   
   // Compute a confinement force that is proportional to the curl.
-  vorticity[index] = 0.5 * uGridSize.w * curl;
+  // vorticity[index] = 0.5 * uGridSize.w * curl;
+  vorticity[index] = 0.001 * uGridSize.w * curl;
 }

@@ -11,6 +11,8 @@ import velAdvectionShaderCode from "../shaders/velAdvection.wgsl?raw"
 import vorticityShaderCode from "../shaders/vorticity.wgsl?raw"
 import addVorticityShaderCode from "../shaders/addVorticity.wgsl?raw"
 import clearPressureShaderCode from "../shaders/clearPressure.wgsl?raw"
+import velBoundaryShaderCode from "../shaders/velBoundary.wgsl?raw"
+import presBoundaryShaderCode from "../shaders/presBoundary.wgsl?raw"
 
 function createRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
   const shaderModule = device.createShaderModule({code: renderShaderCode});
@@ -132,6 +134,24 @@ function clearPressureComputePipeline(device: GPUDevice) {
   });
 }
 
+function clearVelBoundaryComputePipeline(device: GPUDevice) {
+  const velBoundaryShaderModule = device.createShaderModule({ code: velBoundaryShaderCode });
+
+  return device.createComputePipeline({
+    compute: { module: velBoundaryShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function clearPresBoundaryComputePipeline(device: GPUDevice) {
+  const presBoundaryShaderModule = device.createShaderModule({ code: presBoundaryShaderCode });
+
+  return device.createComputePipeline({
+    compute: { module: presBoundaryShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
 export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const renderPipeline = createRenderPipeline(device, format);
   const velPipeline = createVelComputePipeline(device);
@@ -146,8 +166,10 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const vorticityPipeline = createVorticityComputePipeline(device);
   const addVorticityPipeline = createAddVorticityComputePipeline(device);
   const clearPressurePipeline = clearPressureComputePipeline(device);
+  const velBoundaryPipeline = clearVelBoundaryComputePipeline(device);
+  const presBoundaryPipeline = clearPresBoundaryComputePipeline(device);
 
   return { renderPipeline, velPipeline, advectionPipeline, decayPipeline, velDecayPipeline, injectionPipeline,
            divPipeline, pressurePipeline, subPressurePipeline, advectVelPipeline, vorticityPipeline,
-           addVorticityPipeline, clearPressurePipeline };
+           addVorticityPipeline, clearPressurePipeline, velBoundaryPipeline, presBoundaryPipeline };
 }

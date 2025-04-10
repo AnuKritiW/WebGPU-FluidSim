@@ -57,5 +57,5 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let mouseVel = uMouse.zw * uStrength * uGridSize.xy; // amplify mouse velocity by strength for effect
 
     let influence = gaussianWeight(pos, mousePos, mouseVel, uRad);
-    velOut[index] = vel[index] * uDiffusion + influence * uDeltaTime * 10.0; // amplify the effect by 100.0 to move the dye
+    velOut[index] = vel[index] * uDiffusion + influence * uDeltaTime * 70.0; // amplify the effect by 100.0 to move the dye
 }

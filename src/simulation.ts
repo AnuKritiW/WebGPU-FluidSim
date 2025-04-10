@@ -59,6 +59,9 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     for (let i = 0; i < 20; i++) {  // 20 iterations (tune this value)
       runPressureComputePass();  // dispatch pressure.wgsl
       updatePressureField();
+
+      runPresBoundaryPass();
+      updatePressureField();
     }
 
     runSubPressureComputePass();  // dispatch subtractPressure.wgsl
@@ -73,6 +76,9 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 
     runAdvectionComputePass();
     updateDyeField();
+
+    runVelocityBoundaryPass();
+    updateVelocityField();
 
     runDecayComputePass();
     runVelDecayComputePass();
@@ -131,7 +137,6 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     device.queue.writeBuffer(buffers.deltaTimeBuf, 0, deltaTimeData);
   }
 
-  
   function runAdvectionComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
@@ -141,7 +146,27 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
   }
-  
+
+  function runVelocityBoundaryPass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(pipelines.velBoundaryPipeline);
+    passEncoder.setBindGroup(0, bindGroups.velBoundaryBindGroup);
+    passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  }
+
+  function runPresBoundaryPass() {
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginComputePass();
+    passEncoder.setPipeline(pipelines.presBoundaryPipeline);
+    passEncoder.setBindGroup(0, bindGroups.presBoundaryBindGroup);
+    passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
+    passEncoder.end();
+    device.queue.submit([commandEncoder.finish()]);
+  }
+
   function runDecayComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
