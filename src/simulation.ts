@@ -14,7 +14,9 @@ interface PipelineMap {
   clearPressurePipeline: GPUComputePipeline,
   advectVelPipeline: GPUComputePipeline,
   vorticityPipeline: GPUComputePipeline,
-  addVorticityPipeline: GPUComputePipeline
+  addVorticityPipeline: GPUComputePipeline,
+  velBoundaryPipeline: GPUComputePipeline,
+  presBoundaryPipeline: GPUComputePipeline
 }
 
 export interface BufferMap {
