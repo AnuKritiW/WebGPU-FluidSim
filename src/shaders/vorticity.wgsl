@@ -11,7 +11,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let y: u32 = global_id.y;
 
   // Bounds check
-  if (x == 0 || y == 0 || x >= gridWidth || y >= gridHeight) {
+  if (x == 0 || y == 0 || x >= (u32(uGridSize.x)) || y >= (u32(uGridSize.y))) {
     return;
   }
 

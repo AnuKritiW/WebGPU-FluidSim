@@ -41,8 +41,8 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     // Bounds check
     let x = global_id.x;
     let y = global_id.y;
-    if (x >= u32(uGridSize.x) || y >= u32(uGridSize.y)) {
-        return;
+    if (x == 0 || y == 0 || x >= (u32(uGridSize.x)) || y >= (u32(uGridSize.y))) {
+      return;
     }
 
     // Compute the 1D index for buffers
@@ -57,5 +57,5 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let mouseVel = uMouse.zw * uStrength * uGridSize.xy; // amplify mouse velocity by strength for effect
 
     let influence = gaussianWeight(pos, mousePos, mouseVel, uRad);
-    velOut[index] = vel[index] * uDiffusion + influence * uDeltaTime * 70.0; // amplify the effect by 100.0 to move the dye
+    velOut[index] = vel[index] * uDiffusion + influence * uDeltaTime * 100.0; // amplify the effect by 100.0 to move the dye
 }
