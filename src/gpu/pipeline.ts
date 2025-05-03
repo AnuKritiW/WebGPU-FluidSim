@@ -1,11 +1,21 @@
-import { createShaderModule } from "./shaders";
+import renderShaderCode from "../shaders/render.wgsl?raw";
 import updateVelocityShaderCode from "../shaders/updateVel.wgsl?raw";
 import advectionShaderCode from "../shaders/advection.wgsl?raw";
 import decayShaderCode from "../shaders/decay.wgsl?raw";
+import velDecayShaderCode from "../shaders/velDecay.wgsl?raw";
 import injectionShaderCode from "../shaders/injection.wgsl?raw";
+import divShaderCode from "../shaders/divergence.wgsl?raw"
+import pressureShaderCode from "../shaders/pressure.wgsl?raw"
+import subPressureShaderCode from "../shaders/subPressure.wgsl?raw"
+import velAdvectionShaderCode from "../shaders/velAdvection.wgsl?raw"
+import vorticityShaderCode from "../shaders/vorticity.wgsl?raw"
+import addVorticityShaderCode from "../shaders/addVorticity.wgsl?raw"
+import clearPressureShaderCode from "../shaders/clearPressure.wgsl?raw"
+import velBoundaryShaderCode from "../shaders/velBoundary.wgsl?raw"
+import presBoundaryShaderCode from "../shaders/presBoundary.wgsl?raw"
 
 function createRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
-  const shaderModule = createShaderModule(device);
+  const shaderModule = device.createShaderModule({code: renderShaderCode});
 
   return device.createRenderPipeline({
     vertex: { module: shaderModule, entryPoint: "vs_main" },                          // positions the quad
@@ -15,7 +25,7 @@ function createRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
   });
 }
 
-function createComputePipeline(device: GPUDevice, format: GPUTextureFormat) {
+function createVelComputePipeline(device: GPUDevice) {
   // Create Compute Pipeline for `updateVelocity.wgsl`
   const velShaderModule = device.createShaderModule({ code: updateVelocityShaderCode });
 
@@ -25,39 +35,141 @@ function createComputePipeline(device: GPUDevice, format: GPUTextureFormat) {
   });
 }
 
-function createAdvectionComputePipeline(device: GPUDevice, format: GPUTextureFormat) {
+function createAdvectionComputePipeline(device: GPUDevice) {
   const advectionShaderModule = device.createShaderModule({ code: advectionShaderCode });
 
   return device.createComputePipeline({
     compute: { module: advectionShaderModule, entryPoint: "main" },
     layout: "auto"
-  })
+  });
 }
 
-function createDecayComputePipeline(device: GPUDevice, format: GPUTextureFormat) {
+function createDecayComputePipeline(device: GPUDevice) {
   const decayShaderModule = device.createShaderModule({ code: decayShaderCode });
 
   return device.createComputePipeline({
     compute: { module: decayShaderModule, entryPoint: "main" },
     layout: "auto"
-  })
+  });
 }
 
-function createInjectionComputePipeline(device: GPUDevice, format: GPUTextureFormat) {
+function createVelDecayComputePipeline(device: GPUDevice) {
+  const velDecayShaderModule = device.createShaderModule({ code: velDecayShaderCode });
+
+  return device.createComputePipeline({
+    compute: { module: velDecayShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function createInjectionComputePipeline(device: GPUDevice) {
   const injectionShaderModule = device.createShaderModule({ code: injectionShaderCode });
 
   return device.createComputePipeline({
     compute: { module: injectionShaderModule, entryPoint: "main" },
     layout: "auto"
-  })
+  });
+}
+
+function createDivComputePipeline(device: GPUDevice) {
+  const divShaderModule = device.createShaderModule({ code: divShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: divShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function createPressureComputePipeline(device: GPUDevice) {
+  const pressureShaderModule = device.createShaderModule({ code: pressureShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: pressureShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function createSubPressureComputePipeline(device: GPUDevice) {
+  const subPressureShaderModule = device.createShaderModule({ code: subPressureShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: subPressureShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function createAdvectVelComputePipeline(device: GPUDevice) {
+  const advectVelShaderModule = device.createShaderModule({ code: velAdvectionShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: advectVelShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function createVorticityComputePipeline(device: GPUDevice) {
+  const vorticityShaderModule = device.createShaderModule({ code: vorticityShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: vorticityShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function createAddVorticityComputePipeline(device: GPUDevice) {
+  const addVorticityShaderModule = device.createShaderModule({ code: addVorticityShaderCode });
+
+  return device.createComputePipeline({
+    compute: {module: addVorticityShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function clearPressureComputePipeline(device: GPUDevice) {
+  const clearPressureShaderModule = device.createShaderModule({ code: clearPressureShaderCode });
+
+  return device.createComputePipeline({
+    compute: { module: clearPressureShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function clearVelBoundaryComputePipeline(device: GPUDevice) {
+  const velBoundaryShaderModule = device.createShaderModule({ code: velBoundaryShaderCode });
+
+  return device.createComputePipeline({
+    compute: { module: velBoundaryShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
+}
+
+function clearPresBoundaryComputePipeline(device: GPUDevice) {
+  const presBoundaryShaderModule = device.createShaderModule({ code: presBoundaryShaderCode });
+
+  return device.createComputePipeline({
+    compute: { module: presBoundaryShaderModule, entryPoint: "main" },
+    layout: "auto"
+  });
 }
 
 export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const renderPipeline = createRenderPipeline(device, format);
-  const velPipeline = createComputePipeline(device, format);
-  const advectionPipeline = createAdvectionComputePipeline(device, format);
-  const decayPipeline = createDecayComputePipeline(device, format);
-  const injectionPipeline = createInjectionComputePipeline(device, format);
+  const velPipeline = createVelComputePipeline(device);
+  const advectionPipeline = createAdvectionComputePipeline(device);
+  const decayPipeline = createDecayComputePipeline(device);
+  const velDecayPipeline = createVelDecayComputePipeline(device);
+  const injectionPipeline = createInjectionComputePipeline(device);
+  const divPipeline = createDivComputePipeline(device);
+  const pressurePipeline = createPressureComputePipeline(device);
+  const subPressurePipeline = createSubPressureComputePipeline(device);
+  const advectVelPipeline = createAdvectVelComputePipeline(device);
+  const vorticityPipeline = createVorticityComputePipeline(device);
+  const addVorticityPipeline = createAddVorticityComputePipeline(device);
+  const clearPressurePipeline = clearPressureComputePipeline(device);
+  const velBoundaryPipeline = clearVelBoundaryComputePipeline(device);
+  const presBoundaryPipeline = clearPresBoundaryComputePipeline(device);
 
-  return { renderPipeline, velPipeline, advectionPipeline, decayPipeline, injectionPipeline };
+  return { renderPipeline, velPipeline, advectionPipeline, decayPipeline, velDecayPipeline, injectionPipeline,
+           divPipeline, pressurePipeline, subPressurePipeline, advectVelPipeline, vorticityPipeline,
+           addVorticityPipeline, clearPressurePipeline, velBoundaryPipeline, presBoundaryPipeline };
 }

@@ -1,7 +1,7 @@
 export class MouseHandler {
   pos: [number, number] = [0, 0]; // stores normalized mouse position
   vel: [number, number] = [0, 0]; // stores mouse velocity
-  isMouseDown = false;
+  isMouseDown: boolean = false;
 
   constructor(canvas: HTMLCanvasElement, device: GPUDevice, mouseBuffer: GPUBuffer) {
     let lastPos: [number, number] = [0, 0]; // local var storing previous pos to be able to calculate vel later

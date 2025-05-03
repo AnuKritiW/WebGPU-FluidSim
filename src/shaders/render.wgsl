@@ -13,13 +13,15 @@ fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> @builtin(position) vec4<f
 // To map between canvas coordinates and simulation grid
 @group(0) @binding(0) var<uniform> gridSize: vec2<f32>;
 @group(0) @binding(1) var<uniform> canvasSize: vec2<f32>;
-@group(0) @binding(2) var<storage, read> dyeFiledBuffer: array<f32>;
+@group(0) @binding(2) var<storage, read> dyeFiledBuffer: array<vec3<f32>>;
 
 // Bilinear interpolation
 
-fn sampleDye(pos: vec2<f32>) -> f32 {
+fn sampleDye(pos: vec2<f32>) -> vec3<f32> {
   let x0 = floor(pos.x);
   let y0 = floor(pos.y);
+  // let x0 = clamp(floor(pos.x), 0.0, gridSize.x - 2.0);
+  // let y0 = clamp(floor(pos.y), 0.0, gridSize.y - 2.0);
   let x1 = x0 + 1.0;
   let y1 = y0 + 1.0;
 
@@ -45,9 +47,14 @@ fn sampleDye(pos: vec2<f32>) -> f32 {
 fn fs_main(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f32> {
   // Normalize by canvas size (0 - 1)
   let uv = fragCoord.xy / canvasSize;
+
   // Map the normalized coordinates to grid coordinates
-  let gridPos = uv * gridSize;
+  let gridPos = clamp(uv * gridSize, vec2<f32>(0.0), gridSize - vec2<f32>(2.0));
 
   let dyeVal = sampleDye(gridPos);
-  return vec4<f32>(dyeVal, dyeVal, dyeVal, 1.0);
+
+  let brightness = pow(dyeVal, vec3<f32>(0.5));          // soft contrast
+  let alpha = clamp(length(dyeVal) * 2.0, 0.0, 1.0);  // opacity ramp
+
+  return vec4<f32>(brightness, alpha);
 }
