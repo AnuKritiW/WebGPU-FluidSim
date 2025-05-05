@@ -179,23 +179,23 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLC
   const rdx = 1.0 / dx;
   const gridSizeData = new Float32Array([gridSize, gridSize, dx, rdx]);
   // TODO: adjust these parameters to see velocity injection more/less easily
-  const radiusData   = new Float32Array([12.0, 0.0, 0.0, 0.0]); // f32 aligned
+  const radiusData   = new Float32Array([2.0, 0.0, 0.0, 0.0]); // f32 aligned
   const strengthData = new Float32Array([0.25, 0.0, 0.0, 0.0]); // f32 aligned
 
   device.queue.writeBuffer(gridSizeBuf, 0, gridSizeData);
   device.queue.writeBuffer(radiusBuf, 0, radiusData);
   device.queue.writeBuffer(strengthBuf, 0, strengthData);
 
-  const decayData = new Float32Array([0.95, 0.0, 0.0, 0.0]); // f32 aligned
+  const decayData = new Float32Array([0.99, 0.0, 0.0, 0.0]); // f32 aligned
   device.queue.writeBuffer(decayBuf, 0, decayData);
 
-  const velDecayData = new Float32Array([0.95, 0.0, 0.0, 0.0]); // f32 aligned
+  const velDecayData = new Float32Array([1.0, 0.0, 0.0, 0.0]); // f32 aligned
   device.queue.writeBuffer(velDecayBuf, 0, velDecayData);
 
   const canvasSizeData = new Float32Array([canvas.width, canvas.height]);
   device.queue.writeBuffer(canvasSizeBuf, 0, canvasSizeData);
 
-  const vorticityStrengthData = new Float32Array([20.0, 0.0, 0.0, 0.0]);
+  const vorticityStrengthData = new Float32Array([500.0, 0.0, 0.0, 0.0]);
   device.queue.writeBuffer(vorticityStrengthBuf, 0, vorticityStrengthData);
 
   const viscosityData = new Float32Array([0.8, 0.0, 0.0, 0.0]);

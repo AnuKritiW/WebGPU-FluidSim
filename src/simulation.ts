@@ -41,52 +41,62 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
   async function simulationLoop() {
     updateDeltaTime(device, buffers);
 
-    // If the mouse is down, run injection pass.
+    // Velocity splat (force injection)
     if (mouseHandler.isMouseDown) {
-      runInjectionComputePass();
-      updateDyeField();
+      runVelComputePass();
+      updateVelocityField();
     }
 
-    // console.log("🖱️ Velocity:", mouseHandler.vel[0], mouseHandler.vel[1]);
-
-    runVelComputePass();
+    // Viscosity (velocity decay)
+    runVelDecayComputePass();
     updateVelocityField();
 
+    // Advect velocity
     runVelocityAdvectionPass();
     updateVelocityField();
 
+    // Pressure projection (Jacobi + subtract + clear)
     resetDivergenceBuffer();
     runDivergenceComputePass();
-
-    for (let i = 0; i < 20; i++) {  // 20 iterations (tune this value)
-      runPressureComputePass();  // dispatch pressure.wgsl
+    for (let i = 0; i < 20; i++) {
+      runPressureComputePass();
       updatePressureField();
 
       runPresBoundaryPass();
       updatePressureField();
     }
 
-    runSubPressureComputePass();  // dispatch subtractPressure.wgsl
-    updatePressureField();
+    // Subtract pressure gradient
+    runSubPressureComputePass();
+    updatePressureField(); // gradient subtract
 
+    // Clear pressure
     runClearPressureComputePass();
     updatePressureField();
 
+    // Vorticity confinement
     runVorticityComputePass();
     runAddVorticityComputePass();
     updateVelocityField();
 
-    runAdvectionComputePass();
-    updateDyeField();
-
+    // Velocity boundary
     runVelocityBoundaryPass();
     updateVelocityField();
 
+    // Dye splat
+    if (mouseHandler.isMouseDown) {
+      runInjectionComputePass();
+      updateDyeField();
+    }
+
+    // Advect dye
+    runAdvectionComputePass();
+    updateDyeField();
+
+    // Decay dye
     runDecayComputePass();
-    runVelDecayComputePass();
 
-    // await readDivergenceBuffer(device, buffers.divBuf);
-
+    // Render
     render(device, context, pipelines.renderPipeline, getRenderBindGroup());
     requestAnimationFrame(simulationLoop);
   }

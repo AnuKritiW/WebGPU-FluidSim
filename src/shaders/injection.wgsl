@@ -72,25 +72,18 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let mouseVel = uMouse.zw * uStrength * uGridSize.xy;
 
   // Define injection radius in grid units – within which injection occurs.
-  // let radius = 0.00025;
-  let radius = 20.0;
+  let radius = 2.0;
 
   // Gaussian weight for smoother injection
   let weight = gaussianWeight(pos, mousePos, mouseVel, radius);
 
-  // Add injection
-  // blends the new injection to any existing dye values within a clamped range
-  // clamped range avoids overflow
-  // dyeOut[index] = clamp(dye[index] * uDiffusion + injectionAmount * weight * uDeltaTime * 500.0, 0.0, 1.0);
-
-  // 🔵 Color logic — direction or time based hue
+  // Color logic — direction or time based hue
   let angle = atan2(mouseVel.y, mouseVel.x); // range (-π, π)
   let hue = fract(angle / (2.0 * 3.14159265)); // normalize to [0,1]
   let rgbColor = hsv2rgb(vec3<f32>(hue, 1.0, 1.0));
 
-  // 🟢 Inject and blend dye
+  // Inject and blend dye
   let current = dye[index];
   let injected = rgbColor * injectionAmount * weight * uDeltaTime * 500.0;
-  // dyeOut[index] = mix(current * uDiffusion, injected + current * uDiffusion, 0.5);
-  dyeOut[index] = clamp(injected + current * uDiffusion, vec3<f32>(0.0), vec3<f32>(1.0));
+  dyeOut[index] = clamp(injected + current * uDiffusion, vec3<f32>(0.0), vec3<f32>(10.0));
 }
