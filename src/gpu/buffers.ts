@@ -195,7 +195,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLC
   const canvasSizeData = new Float32Array([canvas.width, canvas.height]);
   device.queue.writeBuffer(canvasSizeBuf, 0, canvasSizeData);
 
-  const vorticityStrengthData = new Float32Array([100.0, 0.0, 0.0, 0.0]);
+  const vorticityStrengthData = new Float32Array([500.0, 0.0, 0.0, 0.0]);
   device.queue.writeBuffer(vorticityStrengthBuf, 0, vorticityStrengthData);
 
   const viscosityData = new Float32Array([0.8, 0.0, 0.0, 0.0]);
