@@ -1,6 +1,6 @@
 import renderShaderCode from "../shaders/render.wgsl?raw";
 import injectVelocityShaderCode from "../shaders/injectVelocity.wgsl?raw";
-import advectionShaderCode from "../shaders/advection.wgsl?raw";
+import advectDyeShaderCode from "../shaders/advectDye.wgsl?raw";
 import decayShaderCode from "../shaders/decay.wgsl?raw";
 import velDecayShaderCode from "../shaders/velDecay.wgsl?raw";
 import injectDyeShaderCode from "../shaders/injectDye.wgsl?raw";
@@ -35,11 +35,11 @@ function createInjectVelocityComputePipeline(device: GPUDevice) {
   });
 }
 
-function createAdvectionComputePipeline(device: GPUDevice) {
-  const advectionShaderModule = device.createShaderModule({ code: advectionShaderCode });
+function createAdvectDyeComputePipeline(device: GPUDevice) {
+  const advectDyeShaderModule = device.createShaderModule({ code: advectDyeShaderCode });
 
   return device.createComputePipeline({
-    compute: { module: advectionShaderModule, entryPoint: "main" },
+    compute: { module: advectDyeShaderModule, entryPoint: "main" },
     layout: "auto"
   });
 }
@@ -155,7 +155,7 @@ function clearPresBoundaryComputePipeline(device: GPUDevice) {
 export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const renderPipeline = createRenderPipeline(device, format);
   const injectVelocityPipeline = createInjectVelocityComputePipeline(device);
-  const advectionPipeline = createAdvectionComputePipeline(device);
+  const advectDyePipeline = createAdvectDyeComputePipeline(device);
   const decayPipeline = createDecayComputePipeline(device);
   const velDecayPipeline = createVelDecayComputePipeline(device);
   const injectDyePipeline = createInjectDyeComputePipeline(device);
@@ -169,7 +169,7 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const velBoundaryPipeline = clearVelBoundaryComputePipeline(device);
   const presBoundaryPipeline = clearPresBoundaryComputePipeline(device);
 
-  return { renderPipeline, injectVelocityPipeline, advectionPipeline, decayPipeline, velDecayPipeline, injectDyePipeline,
+  return { renderPipeline, injectVelocityPipeline, advectDyePipeline, decayPipeline, velDecayPipeline, injectDyePipeline,
            divPipeline, pressurePipeline, subPressurePipeline, advectVelPipeline, vorticityPipeline,
            addVorticityPipeline, clearPressurePipeline, velBoundaryPipeline, presBoundaryPipeline };
 }
