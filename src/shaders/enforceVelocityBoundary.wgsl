@@ -4,8 +4,8 @@ For boundary cells, samples velocity from the nearest interior cell and flips th
 (x or y) to simulate solid wall bounce-back.
 */
 
-@group(0) @binding(0) var<storage, read> velIn: array<vec2<f32>>;
-@group(0) @binding(1) var<storage, read_write> velOut: array<vec2<f32>>;
+@group(0) @binding(0) var<storage, read> velocityIn: array<vec2<f32>>;
+@group(0) @binding(1) var<storage, read_write> velocityOut: array<vec2<f32>>;
 @group(0) @binding(2) var<uniform> uGridSize: vec2<f32>;
 
 @compute @workgroup_size(8, 8)
@@ -45,8 +45,8 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   }
 
   let neighborIndex = sampleX + sampleY * gridWidth;
-  let vel = velIn[neighborIndex];
+  let vel = velocityIn[neighborIndex];
 
   // Reflect the velocity components
-  velOut[index] = vec2<f32>(vel.x * flipX, vel.y * flipY);
+  velocityOut[index] = vec2<f32>(vel.x * flipX, vel.y * flipY);
 }

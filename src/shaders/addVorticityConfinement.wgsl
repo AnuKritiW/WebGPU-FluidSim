@@ -1,9 +1,9 @@
-@group(0) @binding(0) var<storage, read> velocity: array<vec2<f32>>;
+@group(0) @binding(0) var<storage, read> velocityIn: array<vec2<f32>>;
 @group(0) @binding(1) var<storage, read> vorticity: array<f32>;
 @group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;
 @group(0) @binding(3) var<uniform> uVorticityStrength: f32;
 @group(0) @binding(4) var<uniform> uDeltaTime: f32;
-@group(0) @binding(5) var<storage, read_write> velOut: array<vec2<f32>>;
+@group(0) @binding(5) var<storage, read_write> velocityOut: array<vec2<f32>>;
 
 @compute @workgroup_size(8,8)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
@@ -40,5 +40,5 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   N *= uGridSize.z * uVorticityStrength * uDeltaTime * curl * vec2(1.0, -1.0);
 
   // Add the force to the velocity field
-  velOut[index] = velocity[index] + N;
+  velocityOut[index] = velocityIn[index] + N;
 }

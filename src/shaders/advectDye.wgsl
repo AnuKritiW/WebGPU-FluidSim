@@ -4,9 +4,9 @@
 
 @group(0) @binding(0) var<storage, read> velocityField: array<vec2<f32>>;
 // read-only current dye field (e.g. a float per cell, representing density)
-@group(0) @binding(1) var<storage, read> dyeField: array<vec3<f32>>;
+@group(0) @binding(1) var<storage, read> dyeIn: array<vec3<f32>>;
 // for ping-pong update
-@group(0) @binding(2) var<storage, read_write> dyeFieldOut: array<vec3<f32>>;
+@group(0) @binding(2) var<storage, read_write> dyeOut: array<vec3<f32>>;
 @group(0) @binding(3) var<uniform> uGridSize: vec4<f32>; // (gridWidth, gridHeight, dx, rdx)
 @group(0) @binding(4) var<uniform> uDeltaTime: f32;
 
@@ -37,10 +37,10 @@ fn sampleDye(pos: vec2<f32>) -> vec3<f32> {
   let i3 = x1 + y1 * i32(uGridSize.x);
 
   // Fetch the four corners
-  let v0 = dyeField[u32(i0)];
-  let v1 = dyeField[u32(i1)];
-  let v2 = dyeField[u32(i2)];
-  let v3 = dyeField[u32(i3)];
+  let v0 = dyeIn[u32(i0)];
+  let v1 = dyeIn[u32(i1)];
+  let v2 = dyeIn[u32(i2)];
+  let v3 = dyeIn[u32(i3)];
 
   // Bilinear interpolation
   let interpX0 = mix(v0, v1, fx);
@@ -111,5 +111,5 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   // Clamp the backtraced position to be within the grid bounds
   let clampedPos = clamp(backPos, vec2<f32>(0.0), uGridSize.xy - vec2<f32>(1.0));
 
-  dyeFieldOut[index] = sampleDye(clampedPos);
+  dyeOut[index] = sampleDye(clampedPos);
 }

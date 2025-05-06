@@ -1,6 +1,6 @@
 // pressure compute shader
 @group(0) @binding(0) var<storage, read> divergence: array<f32>;
-@group(0) @binding(1) var<storage, read> pressure: array<f32>;
+@group(0) @binding(1) var<storage, read> pressureIn: array<f32>;
 @group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;
 @group(0) @binding(3) var<storage, read_write> pressureOut: array<f32>;
 
@@ -19,10 +19,10 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let index: u32 = x + y * gridWidth;
   
   // Gather neighboring pressure values with clamping
-  let pressureLeft:   f32 = select(pressure[index], pressure[index - 1u], (x > 0u));
-  let pressureRight:  f32 = select(pressure[index], pressure[index + 1u], (x < gridWidth - 1u));
-  let pressureTop:    f32 = select(pressure[index], pressure[index - gridWidth], (y > 0u));
-  let pressureBottom: f32 = select(pressure[index], pressure[index + gridWidth], (y < gridHeight - 1u));
+  let pressureLeft:   f32 = select(pressureIn[index], pressureIn[index - 1u], (x > 0u));
+  let pressureRight:  f32 = select(pressureIn[index], pressureIn[index + 1u], (x < gridWidth - 1u));
+  let pressureTop:    f32 = select(pressureIn[index], pressureIn[index - gridWidth], (y > 0u));
+  let pressureBottom: f32 = select(pressureIn[index], pressureIn[index + gridWidth], (y < gridHeight - 1u));
   
   // Average the neighboring pressures and add the local divergence.
   // In a typical Jacobi iteration for the Poisson equation,

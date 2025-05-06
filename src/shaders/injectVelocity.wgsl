@@ -5,7 +5,7 @@ in the direction of the mouse movement.
 */
 
 // Stores vel values for each cell -- read and write access
-@group(0) @binding(0) var<storage, read> vel : array<vec2<f32>>;
+@group(0) @binding(0) var<storage, read> velocityIn : array<vec2<f32>>;
 
 // Stores mouse position (xy) and velocity (zw)
 @group(0) @binding(1) var<uniform> uMouse : vec4<f32>; // (posX, posY, velX, velY)
@@ -14,7 +14,7 @@ in the direction of the mouse movement.
 @group(0) @binding(2) var<uniform> uGridSize : vec2<f32>;
 
 // Stores the radius within which the force can spread
-@group(0) @binding(3) var<uniform> uRad : f32;
+@group(0) @binding(3) var<uniform> uRadius : f32;
 
 // Stores the strength of the applied force
 @group(0) @binding(4) var<uniform> uStrength : f32;
@@ -22,7 +22,7 @@ in the direction of the mouse movement.
 // Stores deltaTime (time between frames)
 @group(0) @binding(5) var<uniform> uDeltaTime : f32;
 
-@group(0) @binding(6) var<storage, read_write> velOut : array<vec2<f32>>;
+@group(0) @binding(6) var<storage, read_write> velocityOut : array<vec2<f32>>;
 
 // Gaussian function for splatting velocity influence
 fn gaussianWeight(pos: vec2<f32>, center: vec2<f32>, vel: vec2<f32>, rad: f32) -> vec2<f32> {
@@ -55,6 +55,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let mousePos = uMouse.xy * uGridSize.xy;
     let mouseVel = uMouse.zw * uStrength * uGridSize.xy; // amplify mouse velocity by strength for effect
 
-    let influence = gaussianWeight(pos, mousePos, mouseVel, uRad);
-    velOut[index] = vel[index] + influence * uDeltaTime * 100.0; // amplify the effect by 100.0 to move the dye
+    let influence = gaussianWeight(pos, mousePos, mouseVel, uRadius);
+    velocityOut[index] = velocityIn[index] + influence * uDeltaTime * 100.0; // amplify the effect by 100.0 to move the dye
 }
