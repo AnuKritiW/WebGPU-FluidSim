@@ -97,7 +97,7 @@ function createSubPressureBindGroup(device: GPUDevice, subPressurePipeline: GPUR
   });
 }
 
-function createAdvectVelBindGroup(device: GPUDevice, advectVelPipeline: GPURenderPipeline, buffers: any) {
+function createAdvectVelocityBindGroup(device: GPUDevice, advectVelPipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: advectVelPipeline.getBindGroupLayout(0),
     entries: [
@@ -178,7 +178,7 @@ export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any
   const divBindGroup = createDivBindGroup(device, pipelines.divPipeline, buffers);
   const pressureBindGroup = createPressureBindGroup(device, pipelines.pressurePipeline, buffers);
   const subPressureBindGroup = createSubPressureBindGroup(device, pipelines.subPressurePipeline, buffers);
-  const advectVelBindGroup = createAdvectVelBindGroup(device, pipelines.advectVelPipeline, buffers);
+  const advectVelocityBindGroup = createAdvectVelocityBindGroup(device, pipelines.advectVelocityPipeline, buffers);
   const vorticityBindGroup = createVoticityBindGroup(device, pipelines.vorticityPipeline, buffers);
   const addVorticityBindGroup = createAddVoticityBindGroup(device, pipelines.addVorticityPipeline, buffers);
   const clearPressureBindGroup = createClearPressureBindGroup(device, pipelines.clearPressurePipeline, buffers);
@@ -186,6 +186,6 @@ export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any
   const presBoundaryBindGroup = createPresBoundaryBindGroup(device, pipelines.presBoundaryPipeline, buffers);
 
   return { injectVelocityBindGroup, advectDyeBindGroup, injectDyeBindGroup, decayBindGroup, velDecayBindGroup, divBindGroup,
-           pressureBindGroup, subPressureBindGroup, advectVelBindGroup, vorticityBindGroup, 
+           pressureBindGroup, subPressureBindGroup, advectVelocityBindGroup, vorticityBindGroup, 
            addVorticityBindGroup, clearPressureBindGroup, velBoundaryBindGroup, presBoundaryBindGroup };
 }

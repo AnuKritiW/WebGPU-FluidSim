@@ -7,7 +7,7 @@ import injectDyeShaderCode from "../shaders/injectDye.wgsl?raw";
 import divShaderCode from "../shaders/divergence.wgsl?raw"
 import pressureShaderCode from "../shaders/pressure.wgsl?raw"
 import subPressureShaderCode from "../shaders/subPressure.wgsl?raw"
-import velAdvectionShaderCode from "../shaders/velAdvection.wgsl?raw"
+import advectVelocityShaderCode from "../shaders/advectVelocity.wgsl?raw"
 import vorticityShaderCode from "../shaders/vorticity.wgsl?raw"
 import addVorticityShaderCode from "../shaders/addVorticity.wgsl?raw"
 import clearPressureShaderCode from "../shaders/clearPressure.wgsl?raw"
@@ -98,11 +98,11 @@ function createSubPressureComputePipeline(device: GPUDevice) {
   });
 }
 
-function createAdvectVelComputePipeline(device: GPUDevice) {
-  const advectVelShaderModule = device.createShaderModule({ code: velAdvectionShaderCode });
+function createAdvectVelocityComputePipeline(device: GPUDevice) {
+  const advectVelocityShaderModule = device.createShaderModule({ code: advectVelocityShaderCode });
 
   return device.createComputePipeline({
-    compute: {module: advectVelShaderModule, entryPoint: "main" },
+    compute: {module: advectVelocityShaderModule, entryPoint: "main" },
     layout: "auto"
   });
 }
@@ -162,7 +162,7 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const divPipeline = createDivComputePipeline(device);
   const pressurePipeline = createPressureComputePipeline(device);
   const subPressurePipeline = createSubPressureComputePipeline(device);
-  const advectVelPipeline = createAdvectVelComputePipeline(device);
+  const advectVelocityPipeline = createAdvectVelocityComputePipeline(device);
   const vorticityPipeline = createVorticityComputePipeline(device);
   const addVorticityPipeline = createAddVorticityComputePipeline(device);
   const clearPressurePipeline = clearPressureComputePipeline(device);
@@ -170,6 +170,6 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const presBoundaryPipeline = clearPresBoundaryComputePipeline(device);
 
   return { renderPipeline, injectVelocityPipeline, advectDyePipeline, decayPipeline, velDecayPipeline, injectDyePipeline,
-           divPipeline, pressurePipeline, subPressurePipeline, advectVelPipeline, vorticityPipeline,
+           divPipeline, pressurePipeline, subPressurePipeline, advectVelocityPipeline, vorticityPipeline,
            addVorticityPipeline, clearPressurePipeline, velBoundaryPipeline, presBoundaryPipeline };
 }

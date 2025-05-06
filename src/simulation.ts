@@ -12,7 +12,7 @@ interface PipelineMap {
   pressurePipeline: GPUComputePipeline,
   subPressurePipeline: GPUComputePipeline,
   clearPressurePipeline: GPUComputePipeline,
-  advectVelPipeline: GPUComputePipeline,
+  advectVelocityPipeline: GPUComputePipeline,
   vorticityPipeline: GPUComputePipeline,
   addVorticityPipeline: GPUComputePipeline,
   velBoundaryPipeline: GPUComputePipeline,
@@ -52,7 +52,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     updateVelocityField();
 
     // Advect velocity
-    runVelocityAdvectionPass();
+    runAdvectVelocityPass();
     updateVelocityField();
 
     // Pressure projection (Jacobi + subtract + clear)
@@ -247,11 +247,11 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runVelocityAdvectionPass() {
+  function runAdvectVelocityPass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.advectVelPipeline);
-    passEncoder.setBindGroup(0, bindGroups.advectVelBindGroup);
+    passEncoder.setPipeline(pipelines.advectVelocityPipeline);
+    passEncoder.setBindGroup(0, bindGroups.advectVelocityBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
