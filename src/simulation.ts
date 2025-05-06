@@ -15,7 +15,7 @@ interface PipelineMap {
   advectVelocityPipeline: GPUComputePipeline,
   computeVorticityPipeline: GPUComputePipeline,
   addVorticityConfinementPipeline: GPUComputePipeline,
-  velBoundaryPipeline: GPUComputePipeline,
+  enforceVelocityBoundaryPipeline: GPUComputePipeline,
   presBoundaryPipeline: GPUComputePipeline
 }
 
@@ -80,7 +80,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     updateVelocityField();
 
     // Velocity boundary
-    runVelocityBoundaryPass();
+    runEnforceVelocityBoundaryPass();
     updateVelocityField();
 
     // Dye splat
@@ -159,11 +159,11 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runVelocityBoundaryPass() {
+  function runEnforceVelocityBoundaryPass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.velBoundaryPipeline);
-    passEncoder.setBindGroup(0, bindGroups.velBoundaryBindGroup);
+    passEncoder.setPipeline(pipelines.enforceVelocityBoundaryPipeline);
+    passEncoder.setBindGroup(0, bindGroups.enforceVelocityBoundaryBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
