@@ -3,7 +3,7 @@ import { MouseHandler } from './input';
 
 interface PipelineMap {
   renderPipeline: GPURenderPipeline,
-  injectionPipeline: GPUComputePipeline,
+  injectDyePipeline: GPUComputePipeline,
   injectVelocityPipeline: GPUComputePipeline,
   advectionPipeline: GPUComputePipeline,
   decayPipeline: GPUComputePipeline,
@@ -85,7 +85,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 
     // Dye splat
     if (mouseHandler.isMouseDown) {
-      runInjectionComputePass();
+      runInjectDyeComputePass();
       updateDyeField();
     }
 
@@ -106,12 +106,12 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
   const dispatchSizeY = Math.ceil(gridSize / workgroupSize);
   
   // Example: Wrapping the injection pass.
-  function runInjectionComputePass() {
+  function runInjectDyeComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.injectionPipeline);
+    passEncoder.setPipeline(pipelines.injectDyePipeline);
     // Reuse the mouse buffer for injection pos; injectionAmount is in its own uniform.
-    passEncoder.setBindGroup(0, bindGroups.injectionBindGroup);
+    passEncoder.setBindGroup(0, bindGroups.injectDyeBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
