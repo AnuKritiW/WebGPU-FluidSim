@@ -4,7 +4,7 @@ import { MouseHandler } from './input';
 interface PipelineMap {
   renderPipeline: GPURenderPipeline,
   injectionPipeline: GPUComputePipeline,
-  velPipeline: GPUComputePipeline,
+  injectVelocityPipeline: GPUComputePipeline,
   advectionPipeline: GPUComputePipeline,
   decayPipeline: GPUComputePipeline,
   velDecayPipeline: GPUComputePipeline,
@@ -120,8 +120,8 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
   function runVelComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.velPipeline);
-    passEncoder.setBindGroup(0, bindGroups.velBindGroup);
+    passEncoder.setPipeline(pipelines.injectVelocityPipeline);
+    passEncoder.setBindGroup(0, bindGroups.injectVelocityBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
