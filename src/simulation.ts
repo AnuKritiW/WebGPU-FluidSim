@@ -6,7 +6,7 @@ interface PipelineMap {
   injectDyePipeline: GPUComputePipeline,
   injectVelocityPipeline: GPUComputePipeline,
   advectDyePipeline: GPUComputePipeline,
-  decayPipeline: GPUComputePipeline,
+  decayDyePipeline: GPUComputePipeline,
   velDecayPipeline: GPUComputePipeline,
   divPipeline: GPUComputePipeline,
   pressurePipeline: GPUComputePipeline,
@@ -94,7 +94,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     updateDyeField();
 
     // Decay dye
-    runDecayComputePass();
+    runDecayDyeComputePass();
 
     // Render
     render(device, context, pipelines.renderPipeline, getRenderBindGroup());
@@ -179,11 +179,11 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runDecayComputePass() {
+  function runDecayDyeComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.decayPipeline);
-    passEncoder.setBindGroup(0, bindGroups.decayBindGroup);
+    passEncoder.setPipeline(pipelines.decayDyePipeline);
+    passEncoder.setBindGroup(0, bindGroups.decayDyeBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);

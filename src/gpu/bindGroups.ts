@@ -41,7 +41,7 @@ function createInjectDyeBindGroup(device: GPUDevice, injectionPipeline: GPURende
   });
 }
 
-function createDecayBindGroup(device: GPUDevice, decayPipeline: GPURenderPipeline, buffers: any) {
+function createDecayDyeBindGroup(device: GPUDevice, decayPipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: decayPipeline.getBindGroupLayout(0),
     entries: [
@@ -173,7 +173,7 @@ export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any
   const injectVelocityBindGroup = createInjectVelocityBindGroup(device, pipelines.injectVelocityPipeline, buffers);
   const advectDyeBindGroup = createAdvectDyeBindGroup(device, pipelines.advectDyePipeline, buffers);
   const injectDyeBindGroup = createInjectDyeBindGroup(device, pipelines.injectDyePipeline, buffers);
-  const decayBindGroup = createDecayBindGroup(device, pipelines.decayPipeline, buffers);
+  const decayDyeBindGroup = createDecayDyeBindGroup(device, pipelines.decayDyePipeline, buffers);
   const velDecayBindGroup = createVelDecayBindGroup(device, pipelines.velDecayPipeline, buffers);
   const divBindGroup = createDivBindGroup(device, pipelines.divPipeline, buffers);
   const pressureBindGroup = createPressureBindGroup(device, pipelines.pressurePipeline, buffers);
@@ -185,7 +185,7 @@ export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any
   const velBoundaryBindGroup = createVelBoundaryBindGroup(device, pipelines.velBoundaryPipeline, buffers);
   const presBoundaryBindGroup = createPresBoundaryBindGroup(device, pipelines.presBoundaryPipeline, buffers);
 
-  return { injectVelocityBindGroup, advectDyeBindGroup, injectDyeBindGroup, decayBindGroup, velDecayBindGroup, divBindGroup,
+  return { injectVelocityBindGroup, advectDyeBindGroup, injectDyeBindGroup, decayDyeBindGroup, velDecayBindGroup, divBindGroup,
            pressureBindGroup, subPressureBindGroup, advectVelocityBindGroup, vorticityBindGroup, 
            addVorticityBindGroup, clearPressureBindGroup, velBoundaryBindGroup, presBoundaryBindGroup };
 }
