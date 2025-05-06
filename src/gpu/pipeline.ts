@@ -12,7 +12,7 @@ import computeVorticityShaderCode from "../shaders/computeVorticity.wgsl?raw"
 import addVorticityConfinementShaderCode from "../shaders/addVorticityConfinement.wgsl?raw"
 import decayPressureShaderCode from "../shaders/decayPressure.wgsl?raw"
 import enforceVelocityBoundaryShaderCode from "../shaders/enforceVelocityBoundary.wgsl?raw"
-import presBoundaryShaderCode from "../shaders/presBoundary.wgsl?raw"
+import enforcePressureBoundaryShaderCode from "../shaders/enforcePressureBoundary.wgsl?raw"
 
 function createRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
   const shaderModule = device.createShaderModule({code: renderShaderCode});
@@ -143,8 +143,8 @@ function enforceVelocityBoundaryComputePipeline(device: GPUDevice) {
   });
 }
 
-function clearPresBoundaryComputePipeline(device: GPUDevice) {
-  const presBoundaryShaderModule = device.createShaderModule({ code: presBoundaryShaderCode });
+function enforcePressureBoundaryComputePipeline(device: GPUDevice) {
+  const presBoundaryShaderModule = device.createShaderModule({ code: enforcePressureBoundaryShaderCode });
 
   return device.createComputePipeline({
     compute: { module: presBoundaryShaderModule, entryPoint: "main" },
@@ -167,9 +167,9 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const addVorticityConfinementPipeline = createAddVorticityConfinementComputePipeline(device);
   const decayPressurePipeline = decayPressureComputePipeline(device);
   const enforceVelocityBoundaryPipeline = enforceVelocityBoundaryComputePipeline(device);
-  const presBoundaryPipeline = clearPresBoundaryComputePipeline(device);
+  const enforcePressureBoundaryPipeline = enforcePressureBoundaryComputePipeline(device);
 
   return { renderPipeline, injectVelocityPipeline, advectDyePipeline, decayDyePipeline, decayVelocityPipeline, injectDyePipeline,
            divPipeline, pressurePipeline, subPressurePipeline, advectVelocityPipeline, computeVorticityPipeline,
-           addVorticityConfinementPipeline, decayPressurePipeline, enforceVelocityBoundaryPipeline, presBoundaryPipeline };
+           addVorticityConfinementPipeline, decayPressurePipeline, enforceVelocityBoundaryPipeline, enforcePressureBoundaryPipeline };
 }

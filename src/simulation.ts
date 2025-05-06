@@ -16,7 +16,7 @@ interface PipelineMap {
   computeVorticityPipeline: GPUComputePipeline,
   addVorticityConfinementPipeline: GPUComputePipeline,
   enforceVelocityBoundaryPipeline: GPUComputePipeline,
-  presBoundaryPipeline: GPUComputePipeline
+  enforcePressureBoundaryPipeline: GPUComputePipeline
 }
 
 export interface BufferMap {
@@ -62,7 +62,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
       runPressureComputePass();
       updatePressureField();
 
-      runPresBoundaryPass();
+      runEnforcePressureBoundaryPass();
       updatePressureField();
     }
 
@@ -169,11 +169,11 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runPresBoundaryPass() {
+  function runEnforcePressureBoundaryPass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.presBoundaryPipeline);
-    passEncoder.setBindGroup(0, bindGroups.presBoundaryBindGroup);
+    passEncoder.setPipeline(pipelines.enforcePressureBoundaryPipeline);
+    passEncoder.setBindGroup(0, bindGroups.enforcePressureBoundaryBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
