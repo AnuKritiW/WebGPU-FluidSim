@@ -6,7 +6,7 @@ import decayVelocityShaderCode from "../shaders/decayVelocity.wgsl?raw";
 import injectDyeShaderCode from "../shaders/injectDye.wgsl?raw";
 import divShaderCode from "../shaders/divergence.wgsl?raw"
 import pressureShaderCode from "../shaders/pressure.wgsl?raw"
-import subPressureShaderCode from "../shaders/subPressure.wgsl?raw"
+import subtractPressureGradientShaderCode from "../shaders/subtractPressureGradient.wgsl?raw"
 import advectVelocityShaderCode from "../shaders/advectVelocity.wgsl?raw"
 import computeVorticityShaderCode from "../shaders/computeVorticity.wgsl?raw"
 import addVorticityConfinementShaderCode from "../shaders/addVorticityConfinement.wgsl?raw"
@@ -89,11 +89,11 @@ function createPressureComputePipeline(device: GPUDevice) {
   });
 }
 
-function createSubPressureComputePipeline(device: GPUDevice) {
-  const subPressureShaderModule = device.createShaderModule({ code: subPressureShaderCode });
+function createSubtractPressureGradientComputePipeline(device: GPUDevice) {
+  const subtractPressureGradientShaderModule = device.createShaderModule({ code: subtractPressureGradientShaderCode });
 
   return device.createComputePipeline({
-    compute: {module: subPressureShaderModule, entryPoint: "main" },
+    compute: {module: subtractPressureGradientShaderModule, entryPoint: "main" },
     layout: "auto"
   });
 }
@@ -161,7 +161,7 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const injectDyePipeline = createInjectDyeComputePipeline(device);
   const divPipeline = createDivComputePipeline(device);
   const pressurePipeline = createPressureComputePipeline(device);
-  const subPressurePipeline = createSubPressureComputePipeline(device);
+  const subtractPressureGradientPipeline = createSubtractPressureGradientComputePipeline(device);
   const advectVelocityPipeline = createAdvectVelocityComputePipeline(device);
   const computeVorticityPipeline = createComputeVorticityComputePipeline(device);
   const addVorticityConfinementPipeline = createAddVorticityConfinementComputePipeline(device);
@@ -170,6 +170,6 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const enforcePressureBoundaryPipeline = enforcePressureBoundaryComputePipeline(device);
 
   return { renderPipeline, injectVelocityPipeline, advectDyePipeline, decayDyePipeline, decayVelocityPipeline, injectDyePipeline,
-           divPipeline, pressurePipeline, subPressurePipeline, advectVelocityPipeline, computeVorticityPipeline,
+           divPipeline, pressurePipeline, subtractPressureGradientPipeline, advectVelocityPipeline, computeVorticityPipeline,
            addVorticityConfinementPipeline, decayPressurePipeline, enforceVelocityBoundaryPipeline, enforcePressureBoundaryPipeline };
 }

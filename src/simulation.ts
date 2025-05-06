@@ -10,7 +10,7 @@ interface PipelineMap {
   decayVelocityPipeline: GPUComputePipeline,
   divPipeline: GPUComputePipeline,
   pressurePipeline: GPUComputePipeline,
-  subPressurePipeline: GPUComputePipeline,
+  subtractPressureGradientPipeline: GPUComputePipeline,
   decayPressurePipeline: GPUComputePipeline,
   advectVelocityPipeline: GPUComputePipeline,
   computeVorticityPipeline: GPUComputePipeline,
@@ -67,7 +67,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     }
 
     // Subtract pressure gradient
-    runSubPressureComputePass();
+    runSubtractPressureGradientComputePass();
     updatePressureField(); // gradient subtract
 
     // Clear pressure
@@ -217,11 +217,11 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runSubPressureComputePass() {
+  function runSubtractPressureGradientComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.subPressurePipeline);
-    passEncoder.setBindGroup(0, bindGroups.subPressureBindGroup);
+    passEncoder.setPipeline(pipelines.subtractPressureGradientPipeline);
+    passEncoder.setBindGroup(0, bindGroups.subtractPressureGradientBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
