@@ -7,7 +7,7 @@ interface PipelineMap {
   injectVelocityPipeline: GPUComputePipeline,
   advectDyePipeline: GPUComputePipeline,
   decayDyePipeline: GPUComputePipeline,
-  velDecayPipeline: GPUComputePipeline,
+  decayVelocityPipeline: GPUComputePipeline,
   divPipeline: GPUComputePipeline,
   pressurePipeline: GPUComputePipeline,
   subPressurePipeline: GPUComputePipeline,
@@ -48,7 +48,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     }
 
     // Viscosity (velocity decay)
-    runVelDecayComputePass();
+    runDecayVelocityComputePass();
     updateVelocityField();
 
     // Advect velocity
@@ -189,11 +189,11 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runVelDecayComputePass() {
+  function runDecayVelocityComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.velDecayPipeline);
-    passEncoder.setBindGroup(0, bindGroups.velDecayBindGroup);
+    passEncoder.setPipeline(pipelines.decayVelocityPipeline);
+    passEncoder.setBindGroup(0, bindGroups.decayVelocityBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);

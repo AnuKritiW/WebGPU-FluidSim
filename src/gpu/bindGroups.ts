@@ -52,7 +52,7 @@ function createDecayDyeBindGroup(device: GPUDevice, decayPipeline: GPURenderPipe
   });
 }
 
-function createVelDecayBindGroup(device: GPUDevice, velDecayPipeline: GPURenderPipeline, buffers: any) {
+function createDecayVelocityBindGroup(device: GPUDevice, velDecayPipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
     layout: velDecayPipeline.getBindGroupLayout(0),
     entries: [
@@ -174,7 +174,7 @@ export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any
   const advectDyeBindGroup = createAdvectDyeBindGroup(device, pipelines.advectDyePipeline, buffers);
   const injectDyeBindGroup = createInjectDyeBindGroup(device, pipelines.injectDyePipeline, buffers);
   const decayDyeBindGroup = createDecayDyeBindGroup(device, pipelines.decayDyePipeline, buffers);
-  const velDecayBindGroup = createVelDecayBindGroup(device, pipelines.velDecayPipeline, buffers);
+  const decayVelocityBindGroup = createDecayVelocityBindGroup(device, pipelines.decayVelocityPipeline, buffers);
   const divBindGroup = createDivBindGroup(device, pipelines.divPipeline, buffers);
   const pressureBindGroup = createPressureBindGroup(device, pipelines.pressurePipeline, buffers);
   const subPressureBindGroup = createSubPressureBindGroup(device, pipelines.subPressurePipeline, buffers);
@@ -185,7 +185,7 @@ export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any
   const velBoundaryBindGroup = createVelBoundaryBindGroup(device, pipelines.velBoundaryPipeline, buffers);
   const presBoundaryBindGroup = createPresBoundaryBindGroup(device, pipelines.presBoundaryPipeline, buffers);
 
-  return { injectVelocityBindGroup, advectDyeBindGroup, injectDyeBindGroup, decayDyeBindGroup, velDecayBindGroup, divBindGroup,
+  return { injectVelocityBindGroup, advectDyeBindGroup, injectDyeBindGroup, decayDyeBindGroup, decayVelocityBindGroup, divBindGroup,
            pressureBindGroup, subPressureBindGroup, advectVelocityBindGroup, vorticityBindGroup, 
            addVorticityBindGroup, clearPressureBindGroup, velBoundaryBindGroup, presBoundaryBindGroup };
 }

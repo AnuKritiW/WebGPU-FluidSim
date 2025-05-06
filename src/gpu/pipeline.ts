@@ -2,7 +2,7 @@ import renderShaderCode from "../shaders/render.wgsl?raw";
 import injectVelocityShaderCode from "../shaders/injectVelocity.wgsl?raw";
 import advectDyeShaderCode from "../shaders/advectDye.wgsl?raw";
 import decayDyeShaderCode from "../shaders/decayDye.wgsl?raw";
-import velDecayShaderCode from "../shaders/velDecay.wgsl?raw";
+import decayVelocityShaderCode from "../shaders/decayVelocity.wgsl?raw";
 import injectDyeShaderCode from "../shaders/injectDye.wgsl?raw";
 import divShaderCode from "../shaders/divergence.wgsl?raw"
 import pressureShaderCode from "../shaders/pressure.wgsl?raw"
@@ -53,11 +53,11 @@ function createDecayDyeComputePipeline(device: GPUDevice) {
   });
 }
 
-function createVelDecayComputePipeline(device: GPUDevice) {
-  const velDecayShaderModule = device.createShaderModule({ code: velDecayShaderCode });
+function createDecayVelocityComputePipeline(device: GPUDevice) {
+  const decayVelocityShaderModule = device.createShaderModule({ code: decayVelocityShaderCode });
 
   return device.createComputePipeline({
-    compute: { module: velDecayShaderModule, entryPoint: "main" },
+    compute: { module: decayVelocityShaderModule, entryPoint: "main" },
     layout: "auto"
   });
 }
@@ -157,7 +157,7 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const injectVelocityPipeline = createInjectVelocityComputePipeline(device);
   const advectDyePipeline = createAdvectDyeComputePipeline(device);
   const decayDyePipeline = createDecayDyeComputePipeline(device);
-  const velDecayPipeline = createVelDecayComputePipeline(device);
+  const decayVelocityPipeline = createDecayVelocityComputePipeline(device);
   const injectDyePipeline = createInjectDyeComputePipeline(device);
   const divPipeline = createDivComputePipeline(device);
   const pressurePipeline = createPressureComputePipeline(device);
@@ -169,7 +169,7 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const velBoundaryPipeline = clearVelBoundaryComputePipeline(device);
   const presBoundaryPipeline = clearPresBoundaryComputePipeline(device);
 
-  return { renderPipeline, injectVelocityPipeline, advectDyePipeline, decayDyePipeline, velDecayPipeline, injectDyePipeline,
+  return { renderPipeline, injectVelocityPipeline, advectDyePipeline, decayDyePipeline, decayVelocityPipeline, injectDyePipeline,
            divPipeline, pressurePipeline, subPressurePipeline, advectVelocityPipeline, vorticityPipeline,
            addVorticityPipeline, clearPressurePipeline, velBoundaryPipeline, presBoundaryPipeline };
 }
