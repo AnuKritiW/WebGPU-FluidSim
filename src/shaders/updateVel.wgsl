@@ -23,7 +23,6 @@ in the direction of the mouse movement.
 @group(0) @binding(5) var<uniform> uDeltaTime : f32;
 
 @group(0) @binding(6) var<storage, read_write> velOut : array<vec2<f32>>;
-@group(0) @binding(7) var<uniform> uDiffusion : f32;
 
 // Gaussian function for splatting velocity influence
 fn gaussianWeight(pos: vec2<f32>, center: vec2<f32>, vel: vec2<f32>, rad: f32) -> vec2<f32> {
@@ -57,5 +56,5 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let mouseVel = uMouse.zw * uStrength * uGridSize.xy; // amplify mouse velocity by strength for effect
 
     let influence = gaussianWeight(pos, mousePos, mouseVel, uRad);
-    velOut[index] = vel[index] * uDiffusion + influence * uDeltaTime * 100.0; // amplify the effect by 100.0 to move the dye
+    velOut[index] = vel[index] + influence * uDeltaTime * 100.0; // amplify the effect by 100.0 to move the dye
 }

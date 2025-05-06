@@ -141,13 +141,6 @@ function createViscosityBuf(device: GPUDevice) {
   });
 }
 
-function createDiffusionBuf(device: GPUDevice) {
-  return device.createBuffer({
-    size: 4 * Float32Array.BYTES_PER_ELEMENT, // f32 padded to vec4<f32>
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-  });
-}
-
 export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLCanvasElement) {
   const mouseBuf = createMouseBuf(device);
   const velBuf      = createVelBuf(device, gridSize);
@@ -169,7 +162,6 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLC
   const vorticityForceBuf = createVorticityForceBuf(device, gridSize);
   const vorticityStrengthBuf = createVorticityStrengthBuf(device);
   const viscosityBuf = createViscosityBuf(device);
-  const diffusionBuf = createDiffusionBuf(device);
 
   // Write initial values
   const injectionAmtData = new Float32Array([100.5, 0.5, 0.5 , 0.0]);
@@ -189,7 +181,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLC
   const decayData = new Float32Array([0.99, 0.0, 0.0, 0.0]); // f32 aligned
   device.queue.writeBuffer(decayBuf, 0, decayData);
 
-  const velDecayData = new Float32Array([1.0, 0.0, 0.0, 0.0]); // f32 aligned
+  const velDecayData = new Float32Array([0.99, 0.0, 0.0, 0.0]); // f32 aligned
   device.queue.writeBuffer(velDecayBuf, 0, velDecayData);
 
   const canvasSizeData = new Float32Array([canvas.width, canvas.height]);
@@ -200,9 +192,6 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLC
 
   const viscosityData = new Float32Array([0.8, 0.0, 0.0, 0.0]);
   device.queue.writeBuffer(viscosityBuf, 0, viscosityData);
-
-  const diffusionData = new Float32Array([0.99, 0.0, 0.0, 0.0]);
-  device.queue.writeBuffer(diffusionBuf, 0, diffusionData);
 
   return {
     mouseBuf,
@@ -225,6 +214,5 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLC
     vorticityForceBuf,
     vorticityStrengthBuf,
     viscosityBuf,
-    diffusionBuf
   };
 }

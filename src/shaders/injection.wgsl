@@ -4,9 +4,8 @@
 @group(0) @binding(2) var<uniform> injectionAmount: f32;
 @group(0) @binding(3) var<uniform> uGridSize: vec4<f32>; // (gridWidth, gridHeight, dx, rdx)
 @group(0) @binding(4) var<uniform> uDeltaTime : f32;
-@group(0) @binding(5) var<uniform> uDiffusion : f32;
-@group(0) @binding(6) var<storage, read_write> dyeOut: array<vec3<f32>>;
-@group(0) @binding(7) var<uniform> uStrength : f32;
+@group(0) @binding(5) var<storage, read_write> dyeOut: array<vec3<f32>>;
+@group(0) @binding(6) var<uniform> uStrength : f32;
 
 fn hsv2rgb(hsv: vec3<f32>) -> vec3<f32> {
     let h = hsv.x;
@@ -85,5 +84,5 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   // Inject and blend dye
   let current = dye[index];
   let injected = rgbColor * injectionAmount * weight * uDeltaTime * 500.0;
-  dyeOut[index] = clamp(injected + current * uDiffusion, vec3<f32>(0.0), vec3<f32>(10.0));
+  dyeOut[index] = clamp(injected + current, vec3<f32>(0.0), vec3<f32>(10.0));
 }
