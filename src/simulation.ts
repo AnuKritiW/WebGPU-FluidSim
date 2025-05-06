@@ -134,16 +134,9 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     let deltaTime = (currentTime - lastFrameTime) / 1000.0; // Convert ms → seconds
     lastFrameTime = currentTime;
 
-    // console.log("Delta Time:", deltaTime);
-    // if(deltaTime < 0.005) {
-    //   console.warn("Delta time is very low:", deltaTime);
-    // }
-
     if (deltaTime > (1.0 / 60.0)) {
       deltaTime = (1.0 / 60.0);
     }
-
-    // deltaTime *= 2.0;
 
     const deltaTimeData = new Float32Array([deltaTime]);
     device.queue.writeBuffer(buffers.deltaTimeBuf, 0, deltaTimeData);
@@ -205,16 +198,13 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 }
 
   function runDivergenceComputePass() {
-    // console.log("🚀 Running Divergence Compute Pass...");
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
     passEncoder.setPipeline(pipelines.divPipeline);
     passEncoder.setBindGroup(0, bindGroups.divBindGroup);
-    // console.log(`🔧 Dispatching divergence compute shader with ${dispatchSizeX} x ${dispatchSizeY}`);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
-    // console.log("✅ Divergence Compute Pass Dispatched!");
   }
 
   function runPressureComputePass() {
@@ -329,26 +319,6 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
       ]
     });
   }
-
-  // async function readDivergenceBuffer(device, divergenceBuffer) {
-  //   const readBuffer = device.createBuffer({
-  //     size: divergenceBuffer.size,
-  //     usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ, // Readable on CPU
-  //   });
-
-  //   // Create command encoder
-  //   const commandEncoder = device.createCommandEncoder();
-  //   commandEncoder.copyBufferToBuffer(divergenceBuffer, 0, readBuffer, 0, divergenceBuffer.size);
-  //   device.queue.submit([commandEncoder.finish()]);
-
-  //   // Wait for GPU to complete work
-  //   await readBuffer.mapAsync(GPUMapMode.READ);
-  //   const arrayBuffer = readBuffer.getMappedRange();
-  //   const divergenceValues = new Float32Array(arrayBuffer);
-
-  //   console.log("Divergence Buffer Values:", divergenceValues);
-  //   readBuffer.unmap();
-  // }
   
   simulationLoop();
 }
