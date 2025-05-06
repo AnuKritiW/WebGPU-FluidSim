@@ -109,9 +109,9 @@ function createAdvectVelocityBindGroup(device: GPUDevice, advectVelPipeline: GPU
   });
 }
 
-function createVoticityBindGroup(device: GPUDevice, vorticityPipeline: GPURenderPipeline, buffers: any) {
+function createComputeVorticityBindGroup(device: GPUDevice, computeVorticityPipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
-    layout: vorticityPipeline.getBindGroupLayout(0),
+    layout: computeVorticityPipeline.getBindGroupLayout(0),
     entries: [
       {binding: 0, resource: { buffer: buffers.velBuf } },
       {binding: 1, resource: { buffer: buffers.gridSizeBuf } },
@@ -179,13 +179,13 @@ export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any
   const pressureBindGroup = createPressureBindGroup(device, pipelines.pressurePipeline, buffers);
   const subPressureBindGroup = createSubPressureBindGroup(device, pipelines.subPressurePipeline, buffers);
   const advectVelocityBindGroup = createAdvectVelocityBindGroup(device, pipelines.advectVelocityPipeline, buffers);
-  const vorticityBindGroup = createVoticityBindGroup(device, pipelines.vorticityPipeline, buffers);
+  const computeVorticityBindGroup = createComputeVorticityBindGroup(device, pipelines.computeVorticityPipeline, buffers);
   const addVorticityConfinementBindGroup = createAddVorticityConfinementBindGroup(device, pipelines.addVorticityConfinementPipeline, buffers);
   const decayPressureBindGroup = createDecayPressureBindGroup(device, pipelines.decayPressurePipeline, buffers);
   const velBoundaryBindGroup = createVelBoundaryBindGroup(device, pipelines.velBoundaryPipeline, buffers);
   const presBoundaryBindGroup = createPresBoundaryBindGroup(device, pipelines.presBoundaryPipeline, buffers);
 
   return { injectVelocityBindGroup, advectDyeBindGroup, injectDyeBindGroup, decayDyeBindGroup, decayVelocityBindGroup, divBindGroup,
-           pressureBindGroup, subPressureBindGroup, advectVelocityBindGroup, vorticityBindGroup, 
+           pressureBindGroup, subPressureBindGroup, advectVelocityBindGroup, computeVorticityBindGroup, 
            addVorticityConfinementBindGroup, decayPressureBindGroup, velBoundaryBindGroup, presBoundaryBindGroup };
 }
