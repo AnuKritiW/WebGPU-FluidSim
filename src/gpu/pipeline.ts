@@ -10,7 +10,7 @@ import subPressureShaderCode from "../shaders/subPressure.wgsl?raw"
 import advectVelocityShaderCode from "../shaders/advectVelocity.wgsl?raw"
 import vorticityShaderCode from "../shaders/vorticity.wgsl?raw"
 import addVorticityShaderCode from "../shaders/addVorticity.wgsl?raw"
-import clearPressureShaderCode from "../shaders/clearPressure.wgsl?raw"
+import decayPressureShaderCode from "../shaders/decayPressure.wgsl?raw"
 import velBoundaryShaderCode from "../shaders/velBoundary.wgsl?raw"
 import presBoundaryShaderCode from "../shaders/presBoundary.wgsl?raw"
 
@@ -125,11 +125,11 @@ function createAddVorticityComputePipeline(device: GPUDevice) {
   });
 }
 
-function clearPressureComputePipeline(device: GPUDevice) {
-  const clearPressureShaderModule = device.createShaderModule({ code: clearPressureShaderCode });
+function decayPressureComputePipeline(device: GPUDevice) {
+  const decayPressureShaderModule = device.createShaderModule({ code: decayPressureShaderCode });
 
   return device.createComputePipeline({
-    compute: { module: clearPressureShaderModule, entryPoint: "main" },
+    compute: { module: decayPressureShaderModule, entryPoint: "main" },
     layout: "auto"
   });
 }
@@ -165,11 +165,11 @@ export function createPipelines(device: GPUDevice, format: GPUTextureFormat) {
   const advectVelocityPipeline = createAdvectVelocityComputePipeline(device);
   const vorticityPipeline = createVorticityComputePipeline(device);
   const addVorticityPipeline = createAddVorticityComputePipeline(device);
-  const clearPressurePipeline = clearPressureComputePipeline(device);
+  const decayPressurePipeline = decayPressureComputePipeline(device);
   const velBoundaryPipeline = clearVelBoundaryComputePipeline(device);
   const presBoundaryPipeline = clearPresBoundaryComputePipeline(device);
 
   return { renderPipeline, injectVelocityPipeline, advectDyePipeline, decayDyePipeline, decayVelocityPipeline, injectDyePipeline,
            divPipeline, pressurePipeline, subPressurePipeline, advectVelocityPipeline, vorticityPipeline,
-           addVorticityPipeline, clearPressurePipeline, velBoundaryPipeline, presBoundaryPipeline };
+           addVorticityPipeline, decayPressurePipeline, velBoundaryPipeline, presBoundaryPipeline };
 }
