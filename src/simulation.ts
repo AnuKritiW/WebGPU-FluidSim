@@ -14,7 +14,7 @@ interface PipelineMap {
   decayPressurePipeline: GPUComputePipeline,
   advectVelocityPipeline: GPUComputePipeline,
   vorticityPipeline: GPUComputePipeline,
-  addVorticityPipeline: GPUComputePipeline,
+  addVorticityConfinementPipeline: GPUComputePipeline,
   velBoundaryPipeline: GPUComputePipeline,
   presBoundaryPipeline: GPUComputePipeline
 }
@@ -76,7 +76,7 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 
     // Vorticity confinement
     runVorticityComputePass();
-    runAddVorticityComputePass();
+    runAddVorticityConfinementComputePass();
     updateVelocityField();
 
     // Velocity boundary
@@ -267,11 +267,11 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runAddVorticityComputePass() {
+  function runAddVorticityConfinementComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.addVorticityPipeline);
-    passEncoder.setBindGroup(0, bindGroups.addVorticityBindGroup);
+    passEncoder.setPipeline(pipelines.addVorticityConfinementPipeline);
+    passEncoder.setBindGroup(0, bindGroups.addVorticityConfinementBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);

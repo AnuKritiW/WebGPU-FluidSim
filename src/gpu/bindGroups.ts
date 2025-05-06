@@ -120,9 +120,9 @@ function createVoticityBindGroup(device: GPUDevice, vorticityPipeline: GPURender
   });
 }
 
-function createAddVoticityBindGroup(device: GPUDevice, addVorticityPipeline: GPURenderPipeline, buffers: any) {
+function createAddVorticityConfinementBindGroup(device: GPUDevice, addVorticityConfinementPipeline: GPURenderPipeline, buffers: any) {
   return device.createBindGroup({
-    layout: addVorticityPipeline.getBindGroupLayout(0),
+    layout: addVorticityConfinementPipeline.getBindGroupLayout(0),
     entries: [
       {binding: 0, resource: { buffer: buffers.velBuf } },
       {binding: 1, resource: { buffer: buffers.vorticityBuf } },
@@ -180,12 +180,12 @@ export function createBindGroups(device: GPUDevice, pipelines: any, buffers: any
   const subPressureBindGroup = createSubPressureBindGroup(device, pipelines.subPressurePipeline, buffers);
   const advectVelocityBindGroup = createAdvectVelocityBindGroup(device, pipelines.advectVelocityPipeline, buffers);
   const vorticityBindGroup = createVoticityBindGroup(device, pipelines.vorticityPipeline, buffers);
-  const addVorticityBindGroup = createAddVoticityBindGroup(device, pipelines.addVorticityPipeline, buffers);
+  const addVorticityConfinementBindGroup = createAddVorticityConfinementBindGroup(device, pipelines.addVorticityConfinementPipeline, buffers);
   const decayPressureBindGroup = createDecayPressureBindGroup(device, pipelines.decayPressurePipeline, buffers);
   const velBoundaryBindGroup = createVelBoundaryBindGroup(device, pipelines.velBoundaryPipeline, buffers);
   const presBoundaryBindGroup = createPresBoundaryBindGroup(device, pipelines.presBoundaryPipeline, buffers);
 
   return { injectVelocityBindGroup, advectDyeBindGroup, injectDyeBindGroup, decayDyeBindGroup, decayVelocityBindGroup, divBindGroup,
            pressureBindGroup, subPressureBindGroup, advectVelocityBindGroup, vorticityBindGroup, 
-           addVorticityBindGroup, decayPressureBindGroup, velBoundaryBindGroup, presBoundaryBindGroup };
+           addVorticityConfinementBindGroup, decayPressureBindGroup, velBoundaryBindGroup, presBoundaryBindGroup };
 }
