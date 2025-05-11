@@ -1,7 +1,14 @@
-/*
-This shader injects forces into the velocity field using a 
-Gaussian splatting approach that is anisotropically stretched 
-in the direction of the mouse movement.
+// Velocity Injection compute shader
+/* This shader injects external forces into the velocity field based on mouse motion,
+   using an anisotropic Gaussian splatting approach aligned with the direction of movement.
+
+   For each non-boundary grid cell:
+     1. Computes the distance from the cell to the mouse position.
+     2. Applies a **directional Gaussian falloff** scaled by distance and mouse velocity.
+     3. Computes an influence vector and adds it to the current velocity at that cell.
+     4. Scales the influence by time step and a strength factor to control the injection intensity.
+
+   This allows dynamic interaction with the fluid, simulating swirling, pushing, or dragging effects.
 */
 
 // Stores vel values for each cell -- read and write access

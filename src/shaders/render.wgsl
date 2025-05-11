@@ -1,3 +1,21 @@
+// Fullscreen Dye Render shader (vertex + fragment)
+/* This shader renders the dye field to the screen using a fullscreen quad.
+
+   Vertex Stage (`vs_main`):
+     - Defines a fullscreen quad by assigning clip-space positions to vertices.
+     - No input buffers are needed; the positions are hardcoded.
+
+   Fragment Stage (`fs_main`):
+     1. Converts screen-space fragment coordinates to normalized UVs.
+     2. Maps UVs to grid coordinates for dye lookup.
+     3. Samples the dye field at the mapped position using bilinear interpolation.
+     4. Applies gamma correction (soft contrast) to the RGB channels.
+     5. Computes alpha based on dye intensity for visual clarity.
+     6. Outputs the final RGBA color for rendering.
+
+   This shader enables real-time visualization of the simulation’s dye field on the canvas.
+*/
+
 @vertex
 // defines full screen quad positions
 fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> @builtin(position) vec4<f32> {

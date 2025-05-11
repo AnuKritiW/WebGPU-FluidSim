@@ -1,6 +1,13 @@
-/*
-Enforces Neumann pressure boundary conditions (zero-gradient) by copying the pressure value from the nearest interior cell to each boundary cell. 
-This prevents artificial pressure build-up at the domain edges and maintains stable simulation behavior.
+// Enforce Pressure Boundary compute shader
+/* This shader enforces Neumann boundary conditions (zero-gradient) on the pressure field
+   by copying pressure values from adjacent interior cells to boundary cells.
+
+   For each boundary grid cell:
+     1. Identifies the nearest valid interior cell.
+     2. Copies the pressure value from that cell into the current boundary cell in `pressureOut`.
+
+   This prevents artificial pressure buildup at the edges of the simulation domain
+   and ensures stable behavior by maintaining a flat pressure gradient at the boundaries.
 */
 
 @group(0) @binding(0) var<storage, read> pressureIn: array<f32>;

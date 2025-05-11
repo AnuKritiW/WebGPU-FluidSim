@@ -1,8 +1,17 @@
-// Advection Compute Shader
-// Reads the velocity field and the current dye field,
-// and writes the updated dye field to an output buffer.
+// Dye Advection compute shader
+/* This shader performs semi-Lagrangian advection of a dye field over a 2D grid.
+   Advection transports dye based on the local velocity field by tracing each grid cell backward in time to sample its previous state.
 
-@group(0) @binding(0) var<storage, read> velocityField: array<vec2<f32>>;
+   For each non-boundary grid cell:
+     1. Retrieves the velocity at the current cell using bilinear interpolation over the velocity field.
+     2. Computes the backtraced position from which the fluid at this cell
+        originated using Euler integration (`pos - velocity * dt * rdx`).
+     3. Clamps this position to remain within the grid domain.
+     4. Uses bilinear interpolation to sample the dye field at the backtraced position.
+     5. Writes the resulting dye value into the output buffer (`dyeOut`), enabling ping-pong updates between frames.
+*/
+
+@group(0) @binding(0) var<storage, read> velocity: array<vec2<f32>>;
 // read-only current dye field (e.g. a float per cell, representing density)
 @group(0) @binding(1) var<storage, read> dyeIn: array<vec3<f32>>;
 // for ping-pong update
@@ -69,10 +78,10 @@ fn sampleVelocity(pos: vec2<f32>) -> vec2<f32> {
   let i3 = u32(x1 + y1 * i32(uGridSize.x));
 
   // Fetch four corner velocities
-  let v0 = velocityField[i0];
-  let v1 = velocityField[i1];
-  let v2 = velocityField[i2];
-  let v3 = velocityField[i3];
+  let v0 = velocity[i0];
+  let v1 = velocity[i1];
+  let v2 = velocity[i2];
+  let v3 = velocity[i3];
 
   // Bilinear interpolation
   let interpX0 = mix(v0, v1, fx);

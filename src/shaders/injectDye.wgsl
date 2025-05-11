@@ -1,4 +1,17 @@
-// injection.wgsl
+// Dye Injection compute shader
+/* This shader injects dye into the simulation grid based on mouse input,
+   simulating external forces like ink or smoke being added to the fluid.
+
+   For each non-boundary grid cell:
+     1. Computes the distance from the cell to the mouse position (in grid units).
+     2. Applies a **Gaussian falloff** based on distance and mouse velocity to control dye influence.
+     3. Computes a dye color based on the injection direction using HSV-to-RGB mapping (directional hue).
+     4. Scales the dye injection by strength, amount, delta time, and local velocity.
+     5. Adds the injected dye to the current dye value and clamps it to a maximum.
+
+   This creates smooth, directional color trails that respond dynamically to user input.
+*/
+
 @group(0) @binding(0) var<storage, read> dyeIn: array<vec3<f32>>;
 @group(0) @binding(1) var<uniform> uMouse : vec4<f32>; // (posX, posY, velX, velY)
 @group(0) @binding(2) var<uniform> uInjectionAmount: f32;

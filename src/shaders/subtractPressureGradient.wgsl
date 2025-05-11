@@ -1,4 +1,17 @@
-// Subtract Pressure Compute Shader
+// Subtract Pressure Gradient compute shader
+/* This shader enforces incompressibility by subtracting the pressure gradient
+   from the velocity field, ensuring that the updated velocity field is divergence-free.
+
+   For each non-boundary grid cell:
+     1. Samples neighboring pressure values (left, right, top, bottom) with clamping.
+     2. Computes the pressure gradient using central finite differences.
+     3. Scales the gradient by `0.5 * rdx` (from `uGridSize.w`) to match spatial resolution.
+     4. Subtracts the pressure gradient from the velocity at the current cell.
+
+   This step removes divergence introduced during advection or force injection,
+   making the velocity field compliant with the incompressibility condition.
+*/
+
 @group(0) @binding(0) var<storage, read_write> velocity: array<vec2<f32>>;
 @group(0) @binding(1) var<storage, read> pressure: array<f32>;
 @group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;;

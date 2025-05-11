@@ -1,3 +1,20 @@
+// Vorticity Confinement compute shader
+/* This shader applies vorticity confinement, which reinforces swirling motions
+  in the velocity field to preserve small-scale vortices and improve visual realism.
+
+  For each non-boundary cell in the 2D velocity grid:
+    1. Computes the 1D index from the 2D global invocation ID.
+    2. Retrieves the vorticity values of neighboring cells (left, right, top, bottom),
+       using clamping to avoid out-of-bounds access.
+    3. Computes the gradient of the magnitude of vorticity (∇|ω|), using finite differences.
+    4. Normalizes this gradient to obtain the unit vector N, pointing toward higher vorticity magnitude.
+    5. Computes the confinement force: a force perpendicular to N scaled by the
+       local vorticity value, a tunable strength factor, and the simulation timestep.
+    6. Applies this confinement force to the velocity field and stores the result in `velocityOut`.
+
+  This step enhances swirling features and prevents their dissipation due to numerical diffusion.
+*/
+
 @group(0) @binding(0) var<storage, read> velocityIn: array<vec2<f32>>;
 @group(0) @binding(1) var<storage, read> vorticity: array<f32>;
 @group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;

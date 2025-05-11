@@ -1,3 +1,16 @@
+// Vorticity Computation compute shader
+/* This shader computes the scalar vorticity (z-component of the curl) of the 2D velocity field.
+   Vorticity is used to identify swirling motion and later apply confinement forces.
+
+   For each non-boundary grid cell:
+     1. Fetches the vertical (y) velocity from left and right neighbors.
+     2. Fetches the horizontal (x) velocity from bottom and top neighbors.
+     3. Approximates the 2D curl as: (∂v/∂x - ∂u/∂y).
+     4. Scales the result and writes it to the `vorticity` buffer.
+
+   This value is used later in vorticity confinement to preserve fluid swirls.
+*/
+
 @group(0) @binding(0) var<storage, read> velocity: array<vec2<f32>>;
 @group(0) @binding(1) var<uniform> uGridSize: vec4<f32>;
 @group(0) @binding(2) var<storage, read_write> vorticity: array<f32>;

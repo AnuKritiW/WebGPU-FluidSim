@@ -1,5 +1,14 @@
-// This shader advects the velocity field itself using a semi-Lagrangian method.
-// Reads the current velocity field (velIn) and writes the advected field into velocityOut.
+// Velocity Advection compute shader
+/* This shader performs semi-Lagrangian advection of the velocity field itself.
+   Each velocity vector is updated by tracing backward through the field to determine where it came from.
+
+   For each non-boundary grid cell:
+     1. Reads the velocity vector at the current cell.
+     2. Computes the backtraced position using Euler integration (`pos - velocity * dt * rdx`).
+     3. Uses bilinear interpolation to sample the velocity field at the backtraced position.
+     4. Writes the result to the output buffer (`velocityOut`) for use in the next simulation step.
+*/
+
 @group(0) @binding(0) var<storage, read> velocityIn: array<vec2<f32>>;
 @group(0) @binding(1) var<storage, read_write> velocityOut: array<vec2<f32>>;
 @group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;;

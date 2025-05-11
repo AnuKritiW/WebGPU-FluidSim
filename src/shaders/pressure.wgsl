@@ -1,4 +1,19 @@
-// pressure compute shader
+// Pressure Solve compute shader
+/* This shader performs one Jacobi iteration to solve the pressure Poisson equation,
+   which is used to enforce incompressibility in the fluid by removing divergence.
+
+   For each non-boundary grid cell:
+     1. Samples the pressure values from the four neighboring cells (left, right, top, bottom),
+        using clamping to handle boundary conditions.
+     2. Combines the neighbor pressures with the local divergence value.
+     3. Applies the Jacobi update formula:
+        `newPressure = (alpha * divergence + sum of neighbors) * 0.25`
+     4. Writes the updated pressure to the output buffer (`pressureOut`).
+
+   This iterative process gradually builds a pressure field that compensates for
+   divergence in the velocity field, ensuring volume preservation.
+*/
+
 @group(0) @binding(0) var<storage, read> divergence: array<f32>;
 @group(0) @binding(1) var<storage, read> pressureIn: array<f32>;
 @group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;

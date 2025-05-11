@@ -1,4 +1,13 @@
-// Decay Compute Shader
+// Dye Decay compute shader
+/* This shader applies exponential decay to the dye field, simulating natural dissipation over time.
+
+   For each non-boundary grid cell:
+     1. Reads the current dye value.
+     2. Multiplies it by a user-defined decay rate (`uDyeDecayRate`).
+     3. Writes the result back to the same location in the dye buffer.
+
+   This step helps prevent dye from building up indefinitely in the simulation.
+*/
 
 @group(0) @binding(0) var<uniform> uGridSize: vec4<f32>;;
 @group(0) @binding(1) var<storage, read_write> dye: array<vec3<f32>>;

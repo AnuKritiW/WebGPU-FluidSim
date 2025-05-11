@@ -1,8 +1,16 @@
-/*
-Enforces no-slip velocity boundary conditions by reflecting velocity components at the domain edges.
-For boundary cells, samples velocity from the nearest interior cell and flips the appropriate component
-(x or y) to simulate solid wall bounce-back.
+// Enforce Velocity Boundary compute shader
+/* This shader enforces no-slip boundary conditions on the velocity field by reflecting
+   velocity components at the edges of the simulation domain to simulate solid wall bounce-back.
+
+   For each boundary grid cell:
+     1. Samples velocity from the nearest interior cell.
+     2. Flips the velocity component normal to the boundary (x or y) to simulate reversal.
+     3. Writes the reflected velocity to the output buffer (`velocityOut`).
+
+   This creates the effect of fluid sticking to and bouncing off the domain walls,
+   consistent with solid boundary behavior in real-world fluid dynamics.
 */
+
 
 @group(0) @binding(0) var<storage, read> velocityIn: array<vec2<f32>>;
 @group(0) @binding(1) var<storage, read_write> velocityOut: array<vec2<f32>>;
