@@ -20,8 +20,6 @@ fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> @builtin(position) vec4<f
 fn sampleDye(pos: vec2<f32>) -> vec3<f32> {
   let x0 = floor(pos.x);
   let y0 = floor(pos.y);
-  // let x0 = clamp(floor(pos.x), 0.0, uGridSize.x - 2.0);
-  // let y0 = clamp(floor(pos.y), 0.0, uGridSize.y - 2.0);
   let x1 = x0 + 1.0;
   let y1 = y0 + 1.0;
 

@@ -64,8 +64,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
   // get grid cell position from the workgroup index
   let pos = vec2<f32>(f32(x), f32(y));// / uGridSize.xy;
-  // let safeMax = vec2<f32>(uGridSize.x - 1.0, uGridSize.y - 1.0) - vec2<f32>(1.0);
-  // let mousePos = clamp(uMouse.xy * uGridSize.xy, vec2<f32>(0.0), safeMax);
 
   // Distance from cell to the injection position
   let mousePos = uMouse.xy * uGridSize.xy;
@@ -81,6 +79,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
   // Inject and blend dye
   let current = dyeIn[index];
-  let injected = rgbColor * uInjectionAmount * weight * uDeltaTime * 500.0;
+  let injected = rgbColor * uInjectionAmount * weight * uDeltaTime;
   dyeOut[index] = clamp(injected + current, vec3<f32>(0.0), vec3<f32>(10.0));
 }

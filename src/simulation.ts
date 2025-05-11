@@ -49,7 +49,6 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 
     // Viscosity (velocity decay)
     runDecayVelocityComputePass();
-    updateVelocityField();
 
     // Advect velocity
     runAdvectVelocityPass();
@@ -72,7 +71,6 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 
     // Clear pressure
     runDecayPressureComputePass();
-    updatePressureField();
 
     // Vorticity confinement
     runComputeVorticityComputePass();

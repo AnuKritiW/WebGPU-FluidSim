@@ -64,7 +64,7 @@ function createDeltaTimeBuf(device: GPUDevice) {
   });
 }
 
-function createDecayBuf(device: GPUDevice) {
+function createDyeDecayBuf(device: GPUDevice) {
   return device.createBuffer({
     size: 4 * Float32Array.BYTES_PER_ELEMENT, // f32 padded to vec4<f32>
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
@@ -152,7 +152,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLC
   const dyeFieldOutBuf = createDyeFieldOutBuf(device, gridSize);
   const deltaTimeBuf = createDeltaTimeBuf(device);
   const injectionAmtBuf = createInjectionAmtBuf(device);
-  const decayBuf = createDecayBuf(device);
+  const dyeDecayBuf = createDyeDecayBuf(device);
   const velDecayBuf = createVelDecayBuf(device);
   const canvasSizeBuf = createCanvasSizeBuf(device);
   const divBuf = createDivBuf(device, gridSize);
@@ -164,7 +164,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLC
   const viscosityBuf = createViscosityBuf(device);
 
   // Write initial values
-  const injectionAmtData = new Float32Array([100.5, 0.5, 0.5 , 0.0]);
+  const injectionAmtData = new Float32Array([500.0, 0.5, 0.5 , 0.0]);
   device.queue.writeBuffer(injectionAmtBuf, 0, injectionAmtData);
 
   const dx = 1.0 / gridSize;
@@ -178,10 +178,10 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLC
   device.queue.writeBuffer(radiusBuf, 0, radiusData);
   device.queue.writeBuffer(strengthBuf, 0, strengthData);
 
-  const decayData = new Float32Array([0.99, 0.0, 0.0, 0.0]); // f32 aligned
-  device.queue.writeBuffer(decayBuf, 0, decayData);
+  const dyeDecayData = new Float32Array([0.99, 0.0, 0.0, 0.0]); // f32 aligned
+  device.queue.writeBuffer(dyeDecayBuf, 0, dyeDecayData);
 
-  const velDecayData = new Float32Array([0.99, 0.0, 0.0, 0.0]); // f32 aligned
+  const velDecayData = new Float32Array([0.999, 0.0, 0.0, 0.0]); // f32 aligned
   device.queue.writeBuffer(velDecayBuf, 0, velDecayData);
 
   const canvasSizeData = new Float32Array([canvas.width, canvas.height]);
@@ -204,7 +204,7 @@ export function createBuffers(device: GPUDevice, gridSize: number, canvas: HTMLC
     dyeFieldOutBuf,
     deltaTimeBuf,
     injectionAmtBuf,
-    decayBuf,
+    dyeDecayBuf,
     velDecayBuf,
     canvasSizeBuf,
     divBuf,

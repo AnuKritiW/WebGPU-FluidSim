@@ -48,7 +48,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let index = x + y * u32(uGridSize.x);
 
     // get grid cell position from the workgroup index
-    // let pos = vec2<f32>(f32(x), f32(y));
     let pos = vec2<f32>(f32(x), f32(y));// / uGridSize.xy;
 
     // let mousePosGrid = uMouse.xy * uGridSize.xy; // convert mouse position to grid space coordinates

@@ -54,7 +54,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let v = velocityIn[index];
   
   // Compute the backtraced position (semi-Lagrangian method)
-  // let backPos = pos - v * uDeltaTime;
   let backPos = pos - v * uDeltaTime * uGridSize.w;
 
   // Bilinear Interpolation

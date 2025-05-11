@@ -14,8 +14,6 @@
 fn sampleDye(pos: vec2<f32>) -> vec3<f32> {
   let x0f = floor(pos.x);
   let y0f = floor(pos.y);
-  // let x0f = clamp(floor(pos.x), 0.0, uGridSize.x - 2.0);
-  // let y0f = clamp(floor(pos.y), 0.0, uGridSize.y - 2.0);
   let x1f = x0f + 1.0;
   let y1f = y0f + 1.0;
 
@@ -98,7 +96,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let pos = vec2<f32>(f32(x), f32(y));
   
   // Get cell velocity
-  // let v = velocityField[index];
   let v = sampleVelocity(pos);
 
   let displacement = v * (uDeltaTime * uGridSize.w);

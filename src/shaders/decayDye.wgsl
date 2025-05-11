@@ -20,8 +20,5 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let pos = vec2<f32>(f32(x), f32(y));
 
   let decayedDye = dye[index] * uDyeDecayRate;
-  // let threshold = vec3<f32>(0.01);
-  // dye[index] = select(decayedDye, vec3<f32>(0.0), decayedDye < threshold);
-  // dye[index] = select(decayedDye, 0.0, decayedDye < 0.01);
   dye[index] = decayedDye;
 }

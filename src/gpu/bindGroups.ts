@@ -36,7 +36,8 @@ function createInjectDyeBindGroup(device: GPUDevice, injectionPipeline: GPURende
       { binding: 3, resource: { buffer: buffers.gridSizeBuf } },
       { binding: 4, resource: { buffer: buffers.deltaTimeBuf } },
       { binding: 5, resource: { buffer: buffers.dyeFieldOutBuf } },
-      { binding: 6, resource: { buffer: buffers.strengthBuf } }
+      { binding: 6, resource: { buffer: buffers.strengthBuf } },
+      { binding: 7, resource: { buffer: buffers.radiusBuf } }
     ]
   });
 }
@@ -47,7 +48,7 @@ function createDecayDyeBindGroup(device: GPUDevice, decayPipeline: GPURenderPipe
     entries: [
       { binding: 0, resource: { buffer: buffers.gridSizeBuf } },
       { binding: 1, resource: { buffer: buffers.dyeFieldBuf } },
-      { binding: 2, resource: { buffer: buffers.decayBuf } }
+      { binding: 2, resource: { buffer: buffers.dyeDecayBuf } }
     ]
   });
 }
@@ -140,9 +141,8 @@ function createDecayPressureBindGroup(device: GPUDevice, decayPressurePipeline: 
     layout: decayPressurePipeline.getBindGroupLayout(0),
     entries: [
       {binding: 0, resource: { buffer: buffers.pressureBuf } },
-      {binding: 1, resource: { buffer: buffers.pressureOutBuf } },
-      {binding: 2, resource: { buffer: buffers.gridSizeBuf } },
-      {binding: 3, resource: { buffer: buffers.viscosityBuf } }
+      {binding: 1, resource: { buffer: buffers.gridSizeBuf } },
+      {binding: 2, resource: { buffer: buffers.viscosityBuf } }
     ]
   });
 }
