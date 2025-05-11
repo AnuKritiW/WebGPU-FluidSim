@@ -1,6 +1,21 @@
-// pressure compute shader
+// Pressure Solve compute shader
+/* This shader performs one Jacobi iteration to solve the pressure Poisson equation,
+   which is used to enforce incompressibility in the fluid by removing divergence.
+
+   For each non-boundary grid cell:
+     1. Samples the pressure values from the four neighboring cells (left, right, top, bottom),
+        using clamping to handle boundary conditions.
+     2. Combines the neighbor pressures with the local divergence value.
+     3. Applies the Jacobi update formula:
+        `newPressure = (alpha * divergence + sum of neighbors) * 0.25`
+     4. Writes the updated pressure to the output buffer (`pressureOut`).
+
+   This iterative process gradually builds a pressure field that compensates for
+   divergence in the velocity field, ensuring volume preservation.
+*/
+
 @group(0) @binding(0) var<storage, read> divergence: array<f32>;
-@group(0) @binding(1) var<storage, read> pressure: array<f32>;
+@group(0) @binding(1) var<storage, read> pressureIn: array<f32>;
 @group(0) @binding(2) var<uniform> uGridSize: vec4<f32>;
 @group(0) @binding(3) var<storage, read_write> pressureOut: array<f32>;
 
@@ -19,10 +34,10 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let index: u32 = x + y * gridWidth;
   
   // Gather neighboring pressure values with clamping
-  let pressureLeft:   f32 = select(pressure[index], pressure[index - 1u], (x > 0u));
-  let pressureRight:  f32 = select(pressure[index], pressure[index + 1u], (x < gridWidth - 1u));
-  let pressureTop:    f32 = select(pressure[index], pressure[index - gridWidth], (y > 0u));
-  let pressureBottom: f32 = select(pressure[index], pressure[index + gridWidth], (y < gridHeight - 1u));
+  let pressureLeft:   f32 = select(pressureIn[index], pressureIn[index - 1u], (x > 0u));
+  let pressureRight:  f32 = select(pressureIn[index], pressureIn[index + 1u], (x < gridWidth - 1u));
+  let pressureTop:    f32 = select(pressureIn[index], pressureIn[index - gridWidth], (y > 0u));
+  let pressureBottom: f32 = select(pressureIn[index], pressureIn[index + gridWidth], (y < gridHeight - 1u));
   
   // Average the neighboring pressures and add the local divergence.
   // In a typical Jacobi iteration for the Poisson equation,

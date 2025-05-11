@@ -1,12 +1,25 @@
-// injection.wgsl
-@group(0) @binding(0) var<storage, read> dye: array<vec3<f32>>;
+// Dye Injection compute shader
+/* This shader injects dye into the simulation grid based on mouse input,
+   simulating external forces like ink or smoke being added to the fluid.
+
+   For each non-boundary grid cell:
+     1. Computes the distance from the cell to the mouse position (in grid units).
+     2. Applies a **Gaussian falloff** based on distance and mouse velocity to control dye influence.
+     3. Computes a dye color based on the injection direction using HSV-to-RGB mapping (directional hue).
+     4. Scales the dye injection by strength, amount, delta time, and local velocity.
+     5. Adds the injected dye to the current dye value and clamps it to a maximum.
+
+   This creates smooth, directional color trails that respond dynamically to user input.
+*/
+
+@group(0) @binding(0) var<storage, read> dyeIn: array<vec3<f32>>;
 @group(0) @binding(1) var<uniform> uMouse : vec4<f32>; // (posX, posY, velX, velY)
-@group(0) @binding(2) var<uniform> injectionAmount: f32;
+@group(0) @binding(2) var<uniform> uInjectionAmount: f32;
 @group(0) @binding(3) var<uniform> uGridSize: vec4<f32>; // (gridWidth, gridHeight, dx, rdx)
 @group(0) @binding(4) var<uniform> uDeltaTime : f32;
-@group(0) @binding(5) var<uniform> uDiffusion : f32;
-@group(0) @binding(6) var<storage, read_write> dyeOut: array<vec3<f32>>;
-@group(0) @binding(7) var<uniform> uStrength : f32;
+@group(0) @binding(5) var<storage, read_write> dyeOut: array<vec3<f32>>;
+@group(0) @binding(6) var<uniform> uStrength : f32;
+@group(0) @binding(7) var<uniform> uRadius : f32; // injection radius in grid units – within which injection occurs.
 
 fn hsv2rgb(hsv: vec3<f32>) -> vec3<f32> {
     let h = hsv.x;
@@ -64,18 +77,13 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
   // get grid cell position from the workgroup index
   let pos = vec2<f32>(f32(x), f32(y));// / uGridSize.xy;
-  // let safeMax = vec2<f32>(uGridSize.x - 1.0, uGridSize.y - 1.0) - vec2<f32>(1.0);
-  // let mousePos = clamp(uMouse.xy * uGridSize.xy, vec2<f32>(0.0), safeMax);
 
   // Distance from cell to the injection position
   let mousePos = uMouse.xy * uGridSize.xy;
   let mouseVel = uMouse.zw * uStrength * uGridSize.xy;
 
-  // Define injection radius in grid units – within which injection occurs.
-  let radius = 2.0;
-
   // Gaussian weight for smoother injection
-  let weight = gaussianWeight(pos, mousePos, mouseVel, radius);
+  let weight = gaussianWeight(pos, mousePos, mouseVel, uRadius);
 
   // Color logic — direction or time based hue
   let angle = atan2(mouseVel.y, mouseVel.x); // range (-π, π)
@@ -83,7 +91,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
   let rgbColor = hsv2rgb(vec3<f32>(hue, 1.0, 1.0));
 
   // Inject and blend dye
-  let current = dye[index];
-  let injected = rgbColor * injectionAmount * weight * uDeltaTime * 500.0;
-  dyeOut[index] = clamp(injected + current * uDiffusion, vec3<f32>(0.0), vec3<f32>(10.0));
+  let current = dyeIn[index];
+  let injected = rgbColor * uInjectionAmount * weight * uDeltaTime;
+  dyeOut[index] = clamp(injected + current, vec3<f32>(0.0), vec3<f32>(10.0));
 }

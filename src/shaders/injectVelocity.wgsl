@@ -1,11 +1,18 @@
-/*
-This shader injects forces into the velocity field using a 
-Gaussian splatting approach that is anisotropically stretched 
-in the direction of the mouse movement.
+// Velocity Injection compute shader
+/* This shader injects external forces into the velocity field based on mouse motion,
+   using an anisotropic Gaussian splatting approach aligned with the direction of movement.
+
+   For each non-boundary grid cell:
+     1. Computes the distance from the cell to the mouse position.
+     2. Applies a **directional Gaussian falloff** scaled by distance and mouse velocity.
+     3. Computes an influence vector and adds it to the current velocity at that cell.
+     4. Scales the influence by time step and a strength factor to control the injection intensity.
+
+   This allows dynamic interaction with the fluid, simulating swirling, pushing, or dragging effects.
 */
 
 // Stores vel values for each cell -- read and write access
-@group(0) @binding(0) var<storage, read> vel : array<vec2<f32>>;
+@group(0) @binding(0) var<storage, read> velocityIn : array<vec2<f32>>;
 
 // Stores mouse position (xy) and velocity (zw)
 @group(0) @binding(1) var<uniform> uMouse : vec4<f32>; // (posX, posY, velX, velY)
@@ -14,7 +21,7 @@ in the direction of the mouse movement.
 @group(0) @binding(2) var<uniform> uGridSize : vec2<f32>;
 
 // Stores the radius within which the force can spread
-@group(0) @binding(3) var<uniform> uRad : f32;
+@group(0) @binding(3) var<uniform> uRadius : f32;
 
 // Stores the strength of the applied force
 @group(0) @binding(4) var<uniform> uStrength : f32;
@@ -22,8 +29,7 @@ in the direction of the mouse movement.
 // Stores deltaTime (time between frames)
 @group(0) @binding(5) var<uniform> uDeltaTime : f32;
 
-@group(0) @binding(6) var<storage, read_write> velOut : array<vec2<f32>>;
-@group(0) @binding(7) var<uniform> uDiffusion : f32;
+@group(0) @binding(6) var<storage, read_write> velocityOut : array<vec2<f32>>;
 
 // Gaussian function for splatting velocity influence
 fn gaussianWeight(pos: vec2<f32>, center: vec2<f32>, vel: vec2<f32>, rad: f32) -> vec2<f32> {
@@ -49,13 +55,12 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let index = x + y * u32(uGridSize.x);
 
     // get grid cell position from the workgroup index
-    // let pos = vec2<f32>(f32(x), f32(y));
     let pos = vec2<f32>(f32(x), f32(y));// / uGridSize.xy;
 
     // let mousePosGrid = uMouse.xy * uGridSize.xy; // convert mouse position to grid space coordinates
     let mousePos = uMouse.xy * uGridSize.xy;
     let mouseVel = uMouse.zw * uStrength * uGridSize.xy; // amplify mouse velocity by strength for effect
 
-    let influence = gaussianWeight(pos, mousePos, mouseVel, uRad);
-    velOut[index] = vel[index] * uDiffusion + influence * uDeltaTime * 100.0; // amplify the effect by 100.0 to move the dye
+    let influence = gaussianWeight(pos, mousePos, mouseVel, uRadius);
+    velocityOut[index] = velocityIn[index] + influence * uDeltaTime * 100.0; // amplify the effect by 100.0 to move the dye
 }

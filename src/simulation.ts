@@ -3,20 +3,20 @@ import { MouseHandler } from './input';
 
 interface PipelineMap {
   renderPipeline: GPURenderPipeline,
-  injectionPipeline: GPUComputePipeline,
-  velPipeline: GPUComputePipeline,
-  advectionPipeline: GPUComputePipeline,
-  decayPipeline: GPUComputePipeline,
-  velDecayPipeline: GPUComputePipeline,
+  injectDyePipeline: GPUComputePipeline,
+  injectVelocityPipeline: GPUComputePipeline,
+  advectDyePipeline: GPUComputePipeline,
+  decayDyePipeline: GPUComputePipeline,
+  decayVelocityPipeline: GPUComputePipeline,
   divPipeline: GPUComputePipeline,
   pressurePipeline: GPUComputePipeline,
-  subPressurePipeline: GPUComputePipeline,
-  clearPressurePipeline: GPUComputePipeline,
-  advectVelPipeline: GPUComputePipeline,
-  vorticityPipeline: GPUComputePipeline,
-  addVorticityPipeline: GPUComputePipeline,
-  velBoundaryPipeline: GPUComputePipeline,
-  presBoundaryPipeline: GPUComputePipeline
+  subtractPressureGradientPipeline: GPUComputePipeline,
+  decayPressurePipeline: GPUComputePipeline,
+  advectVelocityPipeline: GPUComputePipeline,
+  computeVorticityPipeline: GPUComputePipeline,
+  addVorticityConfinementPipeline: GPUComputePipeline,
+  enforceVelocityBoundaryPipeline: GPUComputePipeline,
+  enforcePressureBoundaryPipeline: GPUComputePipeline
 }
 
 export interface BufferMap {
@@ -48,11 +48,10 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     }
 
     // Viscosity (velocity decay)
-    runVelDecayComputePass();
-    updateVelocityField();
+    runDecayVelocityComputePass();
 
     // Advect velocity
-    runVelocityAdvectionPass();
+    runAdvectVelocityPass();
     updateVelocityField();
 
     // Pressure projection (Jacobi + subtract + clear)
@@ -62,39 +61,38 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
       runPressureComputePass();
       updatePressureField();
 
-      runPresBoundaryPass();
+      runEnforcePressureBoundaryPass();
       updatePressureField();
     }
 
     // Subtract pressure gradient
-    runSubPressureComputePass();
+    runSubtractPressureGradientComputePass();
     updatePressureField(); // gradient subtract
 
     // Clear pressure
-    runClearPressureComputePass();
-    updatePressureField();
+    runDecayPressureComputePass();
 
     // Vorticity confinement
-    runVorticityComputePass();
-    runAddVorticityComputePass();
+    runComputeVorticityComputePass();
+    runAddVorticityConfinementComputePass();
     updateVelocityField();
 
     // Velocity boundary
-    runVelocityBoundaryPass();
+    runEnforceVelocityBoundaryPass();
     updateVelocityField();
 
     // Dye splat
     if (mouseHandler.isMouseDown) {
-      runInjectionComputePass();
+      runInjectDyeComputePass();
       updateDyeField();
     }
 
     // Advect dye
-    runAdvectionComputePass();
+    runAdvectDyeComputePass();
     updateDyeField();
 
     // Decay dye
-    runDecayComputePass();
+    runDecayDyeComputePass();
 
     // Render
     render(device, context, pipelines.renderPipeline, getRenderBindGroup());
@@ -106,12 +104,12 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
   const dispatchSizeY = Math.ceil(gridSize / workgroupSize);
   
   // Example: Wrapping the injection pass.
-  function runInjectionComputePass() {
+  function runInjectDyeComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.injectionPipeline);
+    passEncoder.setPipeline(pipelines.injectDyePipeline);
     // Reuse the mouse buffer for injection pos; injectionAmount is in its own uniform.
-    passEncoder.setBindGroup(0, bindGroups.injectionBindGroup);
+    passEncoder.setBindGroup(0, bindGroups.injectDyeBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
@@ -120,8 +118,8 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
   function runVelComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.velPipeline);
-    passEncoder.setBindGroup(0, bindGroups.velBindGroup);
+    passEncoder.setPipeline(pipelines.injectVelocityPipeline);
+    passEncoder.setBindGroup(0, bindGroups.injectVelocityBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
@@ -134,66 +132,59 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     let deltaTime = (currentTime - lastFrameTime) / 1000.0; // Convert ms → seconds
     lastFrameTime = currentTime;
 
-    // console.log("Delta Time:", deltaTime);
-    // if(deltaTime < 0.005) {
-    //   console.warn("Delta time is very low:", deltaTime);
-    // }
-
     if (deltaTime > (1.0 / 60.0)) {
       deltaTime = (1.0 / 60.0);
     }
-
-    // deltaTime *= 2.0;
 
     const deltaTimeData = new Float32Array([deltaTime]);
     device.queue.writeBuffer(buffers.deltaTimeBuf, 0, deltaTimeData);
   }
 
-  function runAdvectionComputePass() {
+  function runAdvectDyeComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.advectionPipeline);
-    passEncoder.setBindGroup(0, bindGroups.advectionBindGroup);
+    passEncoder.setPipeline(pipelines.advectDyePipeline);
+    passEncoder.setBindGroup(0, bindGroups.advectDyeBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runVelocityBoundaryPass() {
+  function runEnforceVelocityBoundaryPass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.velBoundaryPipeline);
-    passEncoder.setBindGroup(0, bindGroups.velBoundaryBindGroup);
+    passEncoder.setPipeline(pipelines.enforceVelocityBoundaryPipeline);
+    passEncoder.setBindGroup(0, bindGroups.enforceVelocityBoundaryBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runPresBoundaryPass() {
+  function runEnforcePressureBoundaryPass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.presBoundaryPipeline);
-    passEncoder.setBindGroup(0, bindGroups.presBoundaryBindGroup);
+    passEncoder.setPipeline(pipelines.enforcePressureBoundaryPipeline);
+    passEncoder.setBindGroup(0, bindGroups.enforcePressureBoundaryBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runDecayComputePass() {
+  function runDecayDyeComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.decayPipeline);
-    passEncoder.setBindGroup(0, bindGroups.decayBindGroup);
+    passEncoder.setPipeline(pipelines.decayDyePipeline);
+    passEncoder.setBindGroup(0, bindGroups.decayDyeBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runVelDecayComputePass() {
+  function runDecayVelocityComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.velDecayPipeline);
-    passEncoder.setBindGroup(0, bindGroups.velDecayBindGroup);
+    passEncoder.setPipeline(pipelines.decayVelocityPipeline);
+    passEncoder.setBindGroup(0, bindGroups.decayVelocityBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
@@ -205,16 +196,13 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
 }
 
   function runDivergenceComputePass() {
-    // console.log("🚀 Running Divergence Compute Pass...");
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
     passEncoder.setPipeline(pipelines.divPipeline);
     passEncoder.setBindGroup(0, bindGroups.divBindGroup);
-    // console.log(`🔧 Dispatching divergence compute shader with ${dispatchSizeX} x ${dispatchSizeY}`);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
-    // console.log("✅ Divergence Compute Pass Dispatched!");
   }
 
   function runPressureComputePass() {
@@ -227,51 +215,51 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runSubPressureComputePass() {
+  function runSubtractPressureGradientComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.subPressurePipeline);
-    passEncoder.setBindGroup(0, bindGroups.subPressureBindGroup);
+    passEncoder.setPipeline(pipelines.subtractPressureGradientPipeline);
+    passEncoder.setBindGroup(0, bindGroups.subtractPressureGradientBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runClearPressureComputePass() {
+  function runDecayPressureComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.clearPressurePipeline);
-    passEncoder.setBindGroup(0, bindGroups.clearPressureBindGroup);
+    passEncoder.setPipeline(pipelines.decayPressurePipeline);
+    passEncoder.setBindGroup(0, bindGroups.decayPressureBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runVelocityAdvectionPass() {
+  function runAdvectVelocityPass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.advectVelPipeline);
-    passEncoder.setBindGroup(0, bindGroups.advectVelBindGroup);
+    passEncoder.setPipeline(pipelines.advectVelocityPipeline);
+    passEncoder.setBindGroup(0, bindGroups.advectVelocityBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runVorticityComputePass() {
+  function runComputeVorticityComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.vorticityPipeline);
-    passEncoder.setBindGroup(0, bindGroups.vorticityBindGroup);
+    passEncoder.setPipeline(pipelines.computeVorticityPipeline);
+    passEncoder.setBindGroup(0, bindGroups.computeVorticityBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
   }
 
-  function runAddVorticityComputePass() {
+  function runAddVorticityConfinementComputePass() {
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginComputePass();
-    passEncoder.setPipeline(pipelines.addVorticityPipeline);
-    passEncoder.setBindGroup(0, bindGroups.addVorticityBindGroup);
+    passEncoder.setPipeline(pipelines.addVorticityConfinementPipeline);
+    passEncoder.setBindGroup(0, bindGroups.addVorticityConfinementBindGroup);
     passEncoder.dispatchWorkgroups(dispatchSizeX, dispatchSizeY);
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
@@ -329,26 +317,6 @@ export function startSimulation({ device, context, buffers, bindGroups, pipeline
       ]
     });
   }
-
-  // async function readDivergenceBuffer(device, divergenceBuffer) {
-  //   const readBuffer = device.createBuffer({
-  //     size: divergenceBuffer.size,
-  //     usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ, // Readable on CPU
-  //   });
-
-  //   // Create command encoder
-  //   const commandEncoder = device.createCommandEncoder();
-  //   commandEncoder.copyBufferToBuffer(divergenceBuffer, 0, readBuffer, 0, divergenceBuffer.size);
-  //   device.queue.submit([commandEncoder.finish()]);
-
-  //   // Wait for GPU to complete work
-  //   await readBuffer.mapAsync(GPUMapMode.READ);
-  //   const arrayBuffer = readBuffer.getMappedRange();
-  //   const divergenceValues = new Float32Array(arrayBuffer);
-
-  //   console.log("Divergence Buffer Values:", divergenceValues);
-  //   readBuffer.unmap();
-  // }
   
   simulationLoop();
 }
