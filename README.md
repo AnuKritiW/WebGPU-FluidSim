@@ -1,6 +1,8 @@
-# simulation
+# WebGPU 2D Fluid Simulation
 
-To see the simulation, visit https://anukritiw.github.io/WebGPU-FluidSim/
+See the **_simulation_** [**here**](https://anukritiw.github.io/WebGPU-FluidSim/)
+
+See the **_demo_** [**here**](https://youtu.be/MOoxdB8uJxw)
 
 ![Demo GIF](./assets/demo.gif)
 
