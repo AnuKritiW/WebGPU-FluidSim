@@ -2,6 +2,8 @@
 
 To see the simulation, visit https://anukritiw.github.io/WebGPU-FluidSim/
 
+![Demo GIF](./assets/demo.gif)
+
 ## Setup instructions
 
 1. Clone the repository
@@ -11,13 +13,14 @@ cd WebGPU-FluidSim
 ```
 
 2. Install dependencies
+
 Make sure you have Node.js (v16 or later) installed.
 Then install the required packages:
 ```bash
 npm install
 ```
 
-3. Run the development server
+1. Run the development server
 ```bash
 npm run dev
 ```
@@ -38,8 +41,8 @@ Use one of the following browsers:
 * Chrome Canary (recommended)
 * Safari Technology Preview
 
-You may need to enable the chrome://flags/#enable-unsafe-webgpu flag in Chrome:
-  1. Go to chrome://flags
+You may need to enable the `chrome://flags/#enable-unsafe-webgpu` flag in Chrome:
+  1. Go to `chrome://flags`
   2. Search for “Unsafe WebGPU”
   3. Set it to Enabled
   4. Relaunch the browser
